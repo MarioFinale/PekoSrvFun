@@ -1,0 +1,11 @@
+name: PekoSrvFun
+version: 1.2.3
+authors: [MarioFinale, Hyperwave, ]
+main: cl.mariofinale.PekoSrvFun
+api-version: 1.17
+website: https://github.com/MarioFinale/PekoSrvFun
+depend: [LibsDisguises]
+commands:
+  peko:
+    description: PekoSrvFun commands.
+    usage: /Peko <blacklistworld - unblacklistworld - pekomon>
