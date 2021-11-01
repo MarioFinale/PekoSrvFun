@@ -8,7 +8,7 @@ Fun Minecraft Plugin for Spigot/PaperMC
 # Pekomon Mechanics
  - Each small slime has a 15% chance of spawning as a Pekomon.
  - A Pekomon will always drop its head and a slime ball when killed.
- - Each Pekomon has a 93,1% chance of spawning as a male.
+ - Each Pekomon has a 93.1% chance of spawning as a male.
  - Each Pekomon type has a different spawning chance:
    - Smiling Pekomon: 33%
    - Wiking Pekomon: 12%
