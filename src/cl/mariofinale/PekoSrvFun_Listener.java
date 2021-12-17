@@ -143,6 +143,9 @@ public class PekoSrvFun_Listener implements Listener{
                 event.getDrops().clear();
                 event.getDrops().add(new ItemStack(Material.SLIME_BALL, 1));
                 event.getDrops().add(newSkull);
+                if (PekoSrvFun.PekomonList.containsKey(entity.getUniqueId())){
+                    PekoSrvFun.PekomonList.remove(entity.getUniqueId());
+                }
             }
             return;
         }
