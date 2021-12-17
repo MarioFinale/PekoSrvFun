@@ -2,7 +2,6 @@ package cl.mariofinale;
 import me.libraryaddict.disguise.*;
 import me.libraryaddict.disguise.disguisetypes.*;
 import me.libraryaddict.disguise.disguisetypes.watchers.*;
-import net.minecraft.world.item.Items;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -14,7 +13,6 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import oshi.util.tuples.Pair;
 
 import java.util.Date;
 import java.util.Random;
@@ -47,7 +45,7 @@ public class PekoSrvFun_Listener implements Listener{
                 return;
             }
             if (inventory.getItemInMainHand().isSimilar(new ItemStack(Material.CARROT)) || inventory.getItemInMainHand().isSimilar(new ItemStack(Material.MILK_BUCKET))){
-                boolean maintype = PekoSrvFun.PekomonList.get(entity.getUniqueId()).getB().endsWith("F");
+                boolean maintype = PekoSrvFun.PekomonList.get(entity.getUniqueId()).b().endsWith("F");
                 boolean nearType = maintype;
                 UUID nearUUID = null;
                 UUID mainUUID = entity.getUniqueId();
@@ -59,7 +57,7 @@ public class PekoSrvFun_Listener implements Listener{
                 }
                 for (Entity near : entity.getNearbyEntities(2,2,2)){
                     if (PekoSrvFun.PekomonList.containsKey(near.getUniqueId())){
-                        nearType = PekoSrvFun.PekomonList.get(near.getUniqueId()).getB().endsWith("F");
+                        nearType = PekoSrvFun.PekomonList.get(near.getUniqueId()).b().endsWith("F");
                         nearUUID = near.getUniqueId();
                         if (PekoSrvFun.TiredPekomonList.containsKey(nearUUID)){
                             if ((new Date().getTime() - PekoSrvFun.TiredPekomonList.get(nearUUID).getTime()) < 300000){

@@ -6,6 +6,7 @@ import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
+import net.minecraft.util.Tuple;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -15,19 +16,16 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import oshi.util.tuples.Pair;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 
-import static me.libraryaddict.disguise.DisguiseConfig.loadConfig;
-
 /** @noinspection unused*/
 public class PekoSrvFun extends JavaPlugin {
     static ArrayList<String> WorldsList = new ArrayList<>();
     static HashMap<UUID, Date> TiredPekomonList = new HashMap<>();
-    static HashMap<UUID, Pair<Location, String>> PekomonList = new HashMap<>();
+    static HashMap<UUID, Tuple<Location, String>> PekomonList = new HashMap<>();
     private static Plugin plugin;
 
     static ItemStack PekomonSmileSkull;
@@ -42,7 +40,6 @@ public class PekoSrvFun extends JavaPlugin {
     static ItemStack FlippedPekomonDerpSkull;
     static ItemStack PekomonWinkSkull;
     static ItemStack FlippedPekomonWinkSkull;
-
     static ItemStack PekomonSmileSkullF;
     static ItemStack FlippedPekomonSmileSkullF;
     static ItemStack PekomonLaughSkullF;
@@ -206,6 +203,29 @@ public class PekoSrvFun extends JavaPlugin {
         ArrayList<String> uuid;
         ArrayList<String> type;
         ArrayList<String> location;
+
+        try{
+            List<Entity> entityList = Bukkit.getWorlds().get(0).getEntities();
+            List<Entity> toRemove = new ArrayList<>();
+            for (Entity ent: entityList){
+                String name = ent.getCustomName();
+
+                if (!(name == null)){
+                    if (name.equals("Dinnerbone")){
+                        if(ent.getType().equals(EntityType.SLIME)){
+                            toRemove.add(ent);
+                        }
+                    }
+                }
+            }
+            for (Entity ent: toRemove){
+                ent.remove();
+            }
+
+        }catch (Exception ex){
+
+        }
+
         try {
             Pekomons1.createNewFile();
             FileConfiguration pekomonfile1 = YamlConfiguration.loadConfiguration(Pekomons1);
@@ -219,6 +239,12 @@ public class PekoSrvFun extends JavaPlugin {
             for (int i = 0; i < uuid.size(); i++ ){
                 String[] locs = location.get(i).split(" ");
                 Location tloc = new Location(Bukkit.getWorld(locs[0]), Double.parseDouble(locs[1]),Double.parseDouble(locs[2]),Double.parseDouble(locs[3]),Float.parseFloat(locs[4]),Float.parseFloat(locs[5]));
+                Collection<Entity> ents = tloc.getWorld().getNearbyEntities(tloc,2,2,2);
+                for (Entity ent : ents) {
+                    if (ent.getUniqueId().toString().trim().equals(uuid.get(i).trim())){
+                        ent.remove();
+                    }
+                }
                 PekoSrvFun_Pekomon pekomon = new PekoSrvFun_Pekomon(tloc,type.get(i));
             }
 
@@ -235,7 +261,7 @@ public class PekoSrvFun extends JavaPlugin {
             for (Entity entity : player.getNearbyEntities(32,32,32)){
                 if (PekoSrvFun.PekomonList.keySet().contains(entity.getUniqueId())){
                     ItemStack skull;
-                    switch (PekomonList.get(entity.getUniqueId()).getB()){
+                    switch (PekomonList.get(entity.getUniqueId()).b()){
                         case "FlippedPekomonBlankSkull":
                             skull =  PekoSrvFun.FlippedPekomonBlankSkull.clone();
                             break;
@@ -314,10 +340,10 @@ public class PekoSrvFun extends JavaPlugin {
         ArrayList<String> types = new ArrayList<>();
         ArrayList<String> locations = new ArrayList<>();
 
-        for (Map.Entry<UUID, Pair<Location, String>> entry: PekomonList.entrySet()) {
+        for (Map.Entry<UUID, Tuple<Location, String>> entry: PekomonList.entrySet()) {
             uuids.add(entry.getKey().toString());
-            Location loc = entry.getValue().getA();
-            types.add(entry.getValue().getB());
+            Location loc = entry.getValue().a();
+            types.add(entry.getValue().b());
             String locstr = loc.getWorld().getName() + " " + loc.getX() + " " + loc.getY() + " " + loc.getZ() + " " + loc.getYaw() + " " + loc.getPitch();
             locations.add(locstr);
         }
@@ -337,8 +363,11 @@ public class PekoSrvFun extends JavaPlugin {
             return;
         }
         LogInfo("Pekomons list saved.");
-        for (Map.Entry<UUID, Pair<Location, String>> entry: PekomonList.entrySet()) {
-            Bukkit.getEntity(entry.getKey()).remove();
+        for (Map.Entry<UUID, Tuple<Location, String>> entry: PekomonList.entrySet()) {
+            try {
+                Bukkit.getEntity(entry.getKey()).remove();
+            }catch (Exception ex){
+            }
         }
     }
 
