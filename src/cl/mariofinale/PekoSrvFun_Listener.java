@@ -175,7 +175,7 @@ public class PekoSrvFun_Listener implements Listener{
         }
     }
 
-    public void SetSlimePekomon(Entity entity){
+    public static void SetSlimePekomon(Entity entity){
         Slime slime = (Slime) entity;
         if (slime.getSize() == 1){
             Random prob = new Random();
@@ -186,7 +186,7 @@ public class PekoSrvFun_Listener implements Listener{
         }
     }
 
-    public void SetPekomon(Slime slime){
+    public static void SetPekomon(Slime slime){
         Random r = new Random();
         int res = r.nextInt(100);
         Random flip = new Random();

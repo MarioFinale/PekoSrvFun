@@ -79,7 +79,7 @@ public class PekoSrvFun extends JavaPlugin {
             public void run() {
                 RefreshPekomons();
             }
-        }, 20, 20);
+        }, 20, 40);
         LogInfo("PekoSrvFun loaded!");
     }
 
@@ -310,8 +310,21 @@ public class PekoSrvFun extends JavaPlugin {
                         watcher.setUpsideDown(true);
                         DisguiseAPI.disguiseToAll(entity, disguise);
                         entity.setPersistent(true);
+                        Slime slime = (Slime) entity;
+                        slime.setRemoveWhenFarAway(false);
                     }
-
+                } else{
+                    if (entity.getType().equals(EntityType.SLIME)){
+                        Slime slime = (Slime) entity;
+                        if (slime.getSize() <= 1 ){
+                            String name = slime.getCustomName();
+                            if (!(name == null)){
+                                if (name.equals("Dinnerbone")){
+                                    PekoSrvFun_Listener.SetPekomon(slime);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -394,4 +407,22 @@ public class PekoSrvFun extends JavaPlugin {
         skull.setItemMeta(meta);
         return skull;
     }
+
+    public void killUndisguisedPekomons(Player player){
+       List<Entity> entityList = player.getNearbyEntities(40,40,40);
+       for (Entity entity :  entityList){
+           if (entity.getType().equals(EntityType.SLIME)){
+               Slime slime = (Slime) entity;
+               if (slime.getSize() == 0 ){
+                   String name = slime.getCustomName();
+                   if (!(name == null)){
+                       if (name.equals("Dinnerbone")){
+                           entity.remove();
+                       }
+                   }
+               }
+           }
+       }
+    }
+
 }
