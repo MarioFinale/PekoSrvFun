@@ -13,7 +13,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 
-
 public class PekoSrvFun_Pekomon extends EntitySlime {
     public PekoSrvFun_Pekomon(Location loc, String type){
         super(EntityTypes.aD, ((CraftWorld) loc.getWorld()).getHandle());

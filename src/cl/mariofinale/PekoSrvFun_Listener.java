@@ -2,9 +2,7 @@ package cl.mariofinale;
 import me.libraryaddict.disguise.*;
 import me.libraryaddict.disguise.disguisetypes.*;
 import me.libraryaddict.disguise.disguisetypes.watchers.*;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.EventHandler;
@@ -146,6 +144,7 @@ public class PekoSrvFun_Listener implements Listener{
                 if (PekoSrvFun.PekomonList.containsKey(entity.getUniqueId())){
                     PekoSrvFun.PekomonList.remove(entity.getUniqueId());
                 }
+                entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_RABBIT_DEATH, SoundCategory.NEUTRAL,2,1 );
             }
             return;
         }
