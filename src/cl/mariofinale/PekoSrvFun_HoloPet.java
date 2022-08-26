@@ -131,6 +131,9 @@ class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
         ((PigZombie) this.getBukkitEntity()).getEquipment().setItemInMainHand(new ItemStack(Material.AIR));
         ((PigZombie) this.getBukkitEntity()).setCanPickupItems(true);
         ((PigZombie) this.getBukkitEntity()).setVisualFire(false);
+        ((PigZombie) this.getBukkitEntity()).setPersistent(true);
+        ((PigZombie) this.getBukkitEntity()).setRemoveWhenFarAway(false);
+
 
 
         PekoSrvFun.LogInfo("Entity ID: " + this.getBukkitEntity().getEntityId());
