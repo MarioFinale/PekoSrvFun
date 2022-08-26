@@ -1,10 +1,13 @@
 package cl.mariofinale;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -19,7 +22,7 @@ public class PekoSrvFun_Commands implements CommandExecutor {
         }
         Player player = (Player) sender;
         if (!player.isValid()) return true;
-        if ((args == null || args.length <= 1)) {
+        if ((args == null || args.length < 2)) {
             return false;
         }
         switch (args[0].toUpperCase()){
@@ -30,9 +33,60 @@ public class PekoSrvFun_Commands implements CommandExecutor {
             case "PEKOMON":
                 SpawnPekomon(player,args[1]);
                 return true;
+            case "HOLOPET":
+                if(!SpawnHoloPet(player, args[1])){
+                    SendMessageToPlayer(player,"Insufficient resources! You Need 1 Pekomon Head, and 1 Deepslate Emerald Block or 10 Netherite cubes.");
+                }
+                return true;
             default:
                 return false;
         }
+    }
+
+    static boolean SpawnHoloPet(Player player, String type){
+        Inventory inventory = player.getInventory();
+        int SkullIndex = -1;
+        int EmeraldIndex = -1;
+        int NetheriteIndex = -1;
+        for (int i = 0; i < inventory.getSize(); i++) {
+            ItemStack item = inventory.getItem(i);
+            if (item == null) continue;
+            if (item.getType() == Material.PLAYER_HEAD) {
+                SkullIndex = i;
+            }
+            if (item.getType() == Material.DEEPSLATE_EMERALD_ORE) {
+                EmeraldIndex = i;
+            }
+            if (item.getType() == Material.NETHERITE_BLOCK) {
+                NetheriteIndex = i;
+            }
+        }
+        if (SkullIndex <= -1) return false;
+        if (EmeraldIndex <= -1 && NetheriteIndex <= -1) return false;
+        if (NetheriteIndex > -1){
+            ItemStack netherite = inventory.getItem(NetheriteIndex);
+            if (netherite.getAmount() > 10){
+                netherite.setAmount(netherite.getAmount()-10);
+            }else if(netherite.getAmount() == 10){
+                inventory.setItem(NetheriteIndex, new ItemStack(Material.AIR, 1));
+            }else{
+                return false;
+            }
+        }
+        inventory.setItem(SkullIndex, new ItemStack(Material.AIR, 1));
+        if (EmeraldIndex > -1){
+            ItemStack emeralds = inventory.getItem(EmeraldIndex);
+            if (emeralds.getAmount() > 1){
+                emeralds.setAmount(emeralds.getAmount()-1);
+            }else{
+                inventory.setItem(EmeraldIndex, new ItemStack(Material.AIR, 1));
+            }
+        }
+
+        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(player.getLocation(), player.getName(), type);
+        SendMessageToPlayer(player,"Your " + pet.getPetName() + " HoloPet has been Invoked!" );
+        player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1,1);
+        return true;
     }
 
     /** @noinspection SameReturnValue*/

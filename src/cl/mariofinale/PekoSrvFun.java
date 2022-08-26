@@ -4,30 +4,39 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
+import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
+import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
-import net.minecraft.util.Tuple;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
 import org.bukkit.entity.*;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.UUID;
 import java.util.logging.Level;
 
-/** @noinspection unused*/
+/**
+ * @noinspection unused
+ */
 public class PekoSrvFun extends JavaPlugin {
     static ArrayList<String> WorldsList = new ArrayList<>();
-    static HashMap<UUID, Date> TiredPekomonList = new HashMap<>();
-    static HashMap<UUID, Tuple<Location, String>> PekomonList = new HashMap<>();
-    private static Plugin plugin;
-
     static ItemStack PekomonSmileSkull;
     static ItemStack FlippedPekomonSmileSkull;
     static ItemStack PekomonLaughSkull;
@@ -52,34 +61,49 @@ public class PekoSrvFun extends JavaPlugin {
     static ItemStack FlippedPekomonDerpSkullF;
     static ItemStack PekomonWinkSkullF;
     static ItemStack FlippedPekomonWinkSkullF;
+    static NamespacedKey holoPetTypeKey;
+    static NamespacedKey holoPetInventoryKey;
+    static NamespacedKey pekomonTypeKey;
+    static NamespacedKey pekomonLastBreedKey;
+    private static Plugin plugin;
 
     @Override
     public void onEnable() {
         plugin = this;
-        LogInfo("Registering listener.");
+        LogInfo("Registering listener...");
         getServer().getPluginManager().registerEvents(new PekoSrvFun_Listener(), this);
         LogInfo("Listener registered.");
-        LogInfo("Loading Worlds list.");
+        LogInfo("Loading Worlds list...");
         LoadWorldsList();
-        LogInfo("Registering commands.");
+        LogInfo("Worlds list loaded.");
+        LogInfo("Registering commands...");
         PekoSrvFun_Commands pekoSrvFun_commands = new PekoSrvFun_Commands();
         this.getCommand("peko").setExecutor(pekoSrvFun_commands);
         LogInfo("Commands registered.");
         LogInfo("Creating skulls...");
         CreateSkulls();
-        LogInfo("Delaying load of Pekomons.");
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                LogInfo("Loading Pekomons...");
-                LoadPekomons();
-            }
-        }.runTaskLater(this.plugin, 20);
+        LogInfo("Skulls created.");
+        LogInfo("Creating Namespaced Keys...");
+        pekomonTypeKey = new NamespacedKey(this, "PekoMonType");
+        pekomonLastBreedKey = new NamespacedKey(this, "PekoMonLastBreed");
+        holoPetTypeKey = new NamespacedKey(this, "holoPetTypeKey");
+        holoPetInventoryKey = new NamespacedKey(this, "holoPetInventoryKey");
+        LogInfo("Namespaced Keys created.");
+        LogInfo("Creating slow refreshing task...");
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             public void run() {
                 RefreshPekomons();
+                RefreshPekos();
             }
-        }, 20, 40);
+        }, 30, 60);
+        LogInfo("Refreshing task created.");
+        LogInfo("Creating fast refreshing task...");
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+            public void run() {
+                HoloPetFastWatcher();
+            }
+        }, 10, 20);
+        LogInfo("Fast refreshing task created.");
         LogInfo("PekoSrvFun loaded!");
     }
 
@@ -88,18 +112,17 @@ public class PekoSrvFun extends JavaPlugin {
         LogInfo("Saving config.");
         plugin.saveDefaultConfig();
         SaveWorldsList();
-        SavePekomons();
         LogInfo("PekoSrvFun disabled!");
     }
 
-    public void CreateSkulls(){
+    public void CreateSkulls() {
         PekomonSmileSkull = SetSkull("b7663111cc5f5c97c7c6c9e3c500edcac5179587be82f5b299b7e197d8efe503", "Smiling Pekomon M");
 
-        FlippedPekomonSmileSkull = SetSkull ("991de5578eef55db6fed22af00d5bf0d425b927cbfeeaa72871d2c0c29fc2378","Flipped Smiling Pekomon M");
+        FlippedPekomonSmileSkull = SetSkull("991de5578eef55db6fed22af00d5bf0d425b927cbfeeaa72871d2c0c29fc2378", "Flipped Smiling Pekomon M");
 
         PekomonLaughSkull = SetSkull("6644db503b23a879dd80d050cdb19d01e24cb5931b3160c4239c5da3ec63d7ea", "Happy Pekomon M");
 
-        FlippedPekomonLaughSkull = SetSkull("be534411b12b93ccba2c4786de880a171ab39b50993b07ad4c1eb43392752b0f","Flipped Happy Pekomon M");
+        FlippedPekomonLaughSkull = SetSkull("be534411b12b93ccba2c4786de880a171ab39b50993b07ad4c1eb43392752b0f", "Flipped Happy Pekomon M");
 
         PekomonCoolSkull = SetSkull("167befffc1b45a591d47f8e0c0b65a1441ed2b61b268d80ce3a64b4bdc710bbe", "Cool Pekomon M");
 
@@ -109,13 +132,13 @@ public class PekoSrvFun extends JavaPlugin {
 
         FlippedPekomonBlankSkull = SetSkull("73418b338072c5b965e19d4dd91ee3d35262ec5b2fd530c1b94753b9b46997a5", "???? M");
 
-        PekomonDerpSkull = SetSkull("d0bf0f2c2d1245413a6c2a016dc4034e1b0dfd58e032720d84ee8ff49d632021","Derp Pekomon M");
+        PekomonDerpSkull = SetSkull("d0bf0f2c2d1245413a6c2a016dc4034e1b0dfd58e032720d84ee8ff49d632021", "Derp Pekomon M");
 
-        FlippedPekomonDerpSkull = SetSkull("c74d6123257bddb85c5082b7ed8f73b362d7c0b9f107c8d6275253cf79c681c9","Flipped Derp Pekomon M");
+        FlippedPekomonDerpSkull = SetSkull("c74d6123257bddb85c5082b7ed8f73b362d7c0b9f107c8d6275253cf79c681c9", "Flipped Derp Pekomon M");
 
-        PekomonWinkSkull = SetSkull("33a81542669e3805613d00e82020dfd8587efe280278e0bfb8e7c19eb2388206","Winking Pekomon M");
+        PekomonWinkSkull = SetSkull("33a81542669e3805613d00e82020dfd8587efe280278e0bfb8e7c19eb2388206", "Winking Pekomon M");
 
-        FlippedPekomonWinkSkull = SetSkull("333e8ad6b369b5cd0a56e34e7c6fec64709893bfa347fcf872ad3a2b820b1638","Flipped Winking Pekomon M");
+        FlippedPekomonWinkSkull = SetSkull("333e8ad6b369b5cd0a56e34e7c6fec64709893bfa347fcf872ad3a2b820b1638", "Flipped Winking Pekomon M");
 
 
         PekomonSmileSkullF = SetSkull("c1f5fcffdd2b2fdf3509ebd553dfc10eeb14b9e243efa3e08d3c291afc1c1909", "Smiling Pekomon F");
@@ -124,7 +147,7 @@ public class PekoSrvFun extends JavaPlugin {
 
         PekomonLaughSkullF = SetSkull("b9c9418b7fe8e5102fdef53a0e6a6f3d16f4e9b9b837afda6e1460678e570d16", "Happy Pekomon F");
 
-        FlippedPekomonLaughSkullF = SetSkull("5548989e1e4de91401d1d685b9a6d79fb20ac0f0236682aa116438f4c7537146","Flipped Happy Pekomon F");
+        FlippedPekomonLaughSkullF = SetSkull("5548989e1e4de91401d1d685b9a6d79fb20ac0f0236682aa116438f4c7537146", "Flipped Happy Pekomon F");
 
         PekomonCoolSkullF = SetSkull("e1c32055055bcff0aad71c0d06f91225ae908f2acb27cc436ad36c65c3ef286e", "Cool Pekomon F");
 
@@ -134,24 +157,27 @@ public class PekoSrvFun extends JavaPlugin {
 
         FlippedPekomonBlankSkullF = SetSkull("5edf7063635c5ee8d26b15d45f3efa5a1a23fb16861b42639e880afc65cc32", "???? F");
 
-        PekomonDerpSkullF = SetSkull("fc12b15ebede9ffbe976add294897506bd0a44417a140c88a4e067f6aa6da8b9","Derp Pekomon F");
+        PekomonDerpSkullF = SetSkull("fc12b15ebede9ffbe976add294897506bd0a44417a140c88a4e067f6aa6da8b9", "Derp Pekomon F");
 
-        FlippedPekomonDerpSkullF = SetSkull("c6ad2d5f75a276a0f8cc4ff1119632568384770e9df14ee3a643348554c0678d","Flipped Derp Pekomon F");
+        FlippedPekomonDerpSkullF = SetSkull("c6ad2d5f75a276a0f8cc4ff1119632568384770e9df14ee3a643348554c0678d", "Flipped Derp Pekomon F");
 
-        PekomonWinkSkullF = SetSkull("ce08126f8eb55b31af9523536a41895ef3bb658bfa742cf3ab4819c7cabd32ea","Winking Pekomon F");
+        PekomonWinkSkullF = SetSkull("ce08126f8eb55b31af9523536a41895ef3bb658bfa742cf3ab4819c7cabd32ea", "Winking Pekomon F");
 
-        FlippedPekomonWinkSkullF = SetSkull("33a065b541b6587c13fbfb7efb5b039fb6649cb4253e77df36152646517e045b","Flipped Winking Pekomon F");
+        FlippedPekomonWinkSkullF = SetSkull("33a065b541b6587c13fbfb7efb5b039fb6649cb4253e77df36152646517e045b", "Flipped Winking Pekomon F");
 
         LogInfo("Finished creating skulls!");
     }
-    private void LogInfo(String line) {
-        plugin.getLogger().log(Level.INFO,line);
+
+    static void LogInfo(String line) {
+        plugin.getLogger().log(Level.INFO, line);
     }
-    private void LogWarn(String line) {
-        plugin.getLogger().log(Level.WARNING,line);
+
+    static void LogWarn(String line) {
+        plugin.getLogger().log(Level.WARNING, line);
     }
-    private void LogError(String line) {
-        plugin.getLogger().log(Level.SEVERE,line);
+
+    static void LogError(String line) {
+        plugin.getLogger().log(Level.SEVERE, line);
     }
 
     private void SaveWorldsList() {
@@ -196,115 +222,66 @@ public class PekoSrvFun extends JavaPlugin {
         LogInfo("Worlds list loaded.");
     }
 
-    private void LoadPekomons() {
-        File Pekomons1 = new File(getDataFolder().getAbsolutePath(), "Pekomon-1.yml");
-        File Pekomons2 = new File(getDataFolder().getAbsolutePath(), "Pekomon-2.yml");
-        File Pekomons3 = new File(getDataFolder().getAbsolutePath(), "Pekomon-3.yml");
-        ArrayList<String> uuid;
-        ArrayList<String> type;
-        ArrayList<String> location;
-
-        try{
-            List<Entity> entityList = Bukkit.getWorlds().get(0).getEntities();
-            List<Entity> toRemove = new ArrayList<>();
-            for (Entity ent: entityList){
-                String name = ent.getCustomName();
-
-                if (!(name == null)){
-                    if (name.equals("Dinnerbone")){
-                        if(ent.getType().equals(EntityType.SLIME)){
-                            toRemove.add(ent);
-                        }
-                    }
-                }
-            }
-            for (Entity ent: toRemove){
-                ent.remove();
-            }
-
-        }catch (Exception ex){
-
-        }
-
-        try {
-            Pekomons1.createNewFile();
-            FileConfiguration pekomonfile1 = YamlConfiguration.loadConfiguration(Pekomons1);
-            uuid = (ArrayList<String>) pekomonfile1.get("List");
-            Pekomons1.createNewFile();
-            FileConfiguration pekomonfile2 = YamlConfiguration.loadConfiguration(Pekomons2);
-            type = (ArrayList<String>) pekomonfile2.get("List");
-            FileConfiguration pekomonfile3 = YamlConfiguration.loadConfiguration(Pekomons3);
-            location = (ArrayList<String>) pekomonfile3.get("List");
-
-            for (int i = 0; i < uuid.size(); i++ ){
-                String[] locs = location.get(i).split(" ");
-                Location tloc = new Location(Bukkit.getWorld(locs[0]), Double.parseDouble(locs[1]),Double.parseDouble(locs[2]),Double.parseDouble(locs[3]),Float.parseFloat(locs[4]),Float.parseFloat(locs[5]));
-                Collection<Entity> ents = tloc.getWorld().getNearbyEntities(tloc,2,2,2);
-                for (Entity ent : ents) {
-                    if (ent.getUniqueId().toString().trim().equals(uuid.get(i).trim())){
-                        ent.remove();
-                    }
-                }
-                PekoSrvFun_Pekomon pekomon = new PekoSrvFun_Pekomon(tloc,type.get(i));
-            }
-
-        } catch (Exception ex) {
-            LogWarn("Pekomon list files have not been loaded: " + ex.getMessage());
-            LogWarn("If this is the first time running the plugin the files will be created on server stop.");
-            return;
-        }
-        LogInfo("Pekomons loaded.");
-    }
-
-    private void RefreshPekomons(){
-        for(Player player: Bukkit.getOnlinePlayers()){
-            for (Entity entity : player.getNearbyEntities(32,32,32)){
-                if (PekoSrvFun.PekomonList.keySet().contains(entity.getUniqueId())){
+    private void RefreshPekomons() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (Entity entity : player.getNearbyEntities(32, 32, 32)) {
+                String pekomonData = getPekomonData(entity);
+                if (!pekomonData.equals("")) {
                     ItemStack skull;
-                    switch (PekomonList.get(entity.getUniqueId()).b()){
+                    switch (pekomonData) {
+                        case "Blank":
                         case "FlippedPekomonBlankSkull":
-                            skull =  PekoSrvFun.FlippedPekomonBlankSkull.clone();
+                            skull = PekoSrvFun.FlippedPekomonBlankSkull.clone();
                             break;
+                        case "BlankF":
                         case "FlippedPekomonBlankSkullF":
-                            skull =  PekoSrvFun.FlippedPekomonBlankSkullF.clone();
+                            skull = PekoSrvFun.FlippedPekomonBlankSkullF.clone();
                             break;
+                        case "SmileF":
                         case "FlippedPekomonSmileSkullF":
-                            skull =  PekoSrvFun.FlippedPekomonSmileSkullF.clone();
+                            skull = PekoSrvFun.FlippedPekomonSmileSkullF.clone();
                             break;
+                        case "Wink":
                         case "FlippedPekomonWinkSkull":
-                            skull =  PekoSrvFun.FlippedPekomonWinkSkull.clone();
+                            skull = PekoSrvFun.FlippedPekomonWinkSkull.clone();
                             break;
+                        case "WinkF":
                         case "FlippedPekomonWinkSkullF":
-                            skull =  PekoSrvFun.FlippedPekomonWinkSkullF.clone();
+                            skull = PekoSrvFun.FlippedPekomonWinkSkullF.clone();
                             break;
+                        case "Happy":
                         case "FlippedPekomonLaughSkull":
-                            skull =  PekoSrvFun.FlippedPekomonLaughSkull.clone();
+                            skull = PekoSrvFun.FlippedPekomonLaughSkull.clone();
                             break;
+                        case "HappyF":
                         case "FlippedPekomonLaughSkullF":
-                            skull =  PekoSrvFun.FlippedPekomonLaughSkullF.clone();
+                            skull = PekoSrvFun.FlippedPekomonLaughSkullF.clone();
                             break;
+                        case "Derp":
                         case "FlippedPekomonDerpSkull":
-                            skull =  PekoSrvFun.FlippedPekomonDerpSkull.clone();
+                            skull = PekoSrvFun.FlippedPekomonDerpSkull.clone();
                             break;
+                        case "DerpF":
                         case "FlippedPekomonDerpSkullF":
-                            skull =  PekoSrvFun.FlippedPekomonDerpSkullF.clone();
+                            skull = PekoSrvFun.FlippedPekomonDerpSkullF.clone();
                             break;
+                        case "Cool":
                         case "FlippedPekomonCoolSkull":
-                            skull =  PekoSrvFun.FlippedPekomonCoolSkull.clone();
+                            skull = PekoSrvFun.FlippedPekomonCoolSkull.clone();
                             break;
+                        case "CoolF":
                         case "FlippedPekomonCoolSkullF":
-                            skull =  PekoSrvFun.FlippedPekomonCoolSkullF.clone();
+                            skull = PekoSrvFun.FlippedPekomonCoolSkullF.clone();
                             break;
                         default:
-                            skull =  PekoSrvFun.FlippedPekomonSmileSkull.clone();
+                            skull = PekoSrvFun.FlippedPekomonSmileSkull.clone();
+                            break;
                     }
-                    if (!DisguiseAPI.isDisguised(entity)){
+                    if (!DisguiseAPI.isDisguised(entity)) {
                         MobDisguise disguise = new MobDisguise(DisguiseType.ZOMBIE);
                         ZombieWatcher watcher = (ZombieWatcher) disguise.getWatcher();
                         watcher.setSneaking(true);
                         watcher.setInvisible(true);
-                        //watcher.setBaby(true);
-                        watcher.setCustomName("Wild PekoMon");
                         watcher.setCustomNameVisible(true);
                         watcher.setArmor(new ItemStack[]{null, null, null, skull});
                         watcher.setUpsideDown(true);
@@ -313,14 +290,14 @@ public class PekoSrvFun extends JavaPlugin {
                         Slime slime = (Slime) entity;
                         slime.setRemoveWhenFarAway(false);
                     }
-                } else{
-                    if (entity.getType().equals(EntityType.SLIME)){
+                } else {
+                    if (entity.getType().equals(EntityType.SLIME)) {
                         Slime slime = (Slime) entity;
-                        if (slime.getSize() <= 1 ){
+                        if (slime.getSize() <= 1) {
                             String name = slime.getCustomName();
-                            if (!(name == null)){
-                                if (name.equals("Dinnerbone")){
-                                    PekoSrvFun_Listener.SetPekomon(slime);
+                            if (!(name == null)) {
+                                if (name.equals("Dinnerbone")) {
+                                    slime.damage(999);
                                 }
                             }
                         }
@@ -330,69 +307,128 @@ public class PekoSrvFun extends JavaPlugin {
         }
     }
 
-    private void SavePekomons() {
-        LogInfo("Saving Pekomons list.");
-        File Pekomons1 = new File(getDataFolder().getAbsolutePath(), "Pekomon-1.yml");
-        File Pekomons2 = new File(getDataFolder().getAbsolutePath(), "Pekomon-2.yml");
-        File Pekomons3 = new File(getDataFolder().getAbsolutePath(), "Pekomon-3.yml");
-        try {
-            Pekomons1.delete();
-            Pekomons1.createNewFile();
-            Pekomons2.delete();
-            Pekomons2.createNewFile();
-            Pekomons3.delete();
-            Pekomons3.createNewFile();
-            if (PekomonList == null) {
-                PekomonList = new HashMap<>();
-            }
-        } catch (Exception ex) {
-            LogError("Error saving Pekomons list: " + ex.getMessage());
-            return;
-        }
-        ArrayList<String> uuids = new ArrayList<>();
-        ArrayList<String> types = new ArrayList<>();
-        ArrayList<String> locations = new ArrayList<>();
-
-        for (Map.Entry<UUID, Tuple<Location, String>> entry: PekomonList.entrySet()) {
-            uuids.add(entry.getKey().toString());
-            Location loc = entry.getValue().a();
-            types.add(entry.getValue().b());
-            String locstr = loc.getWorld().getName() + " " + loc.getX() + " " + loc.getY() + " " + loc.getZ() + " " + loc.getYaw() + " " + loc.getPitch();
-            locations.add(locstr);
-        }
-
-        FileConfiguration pekomonfile1 = YamlConfiguration.loadConfiguration(Pekomons1);
-        pekomonfile1.set("List", uuids);
-        FileConfiguration pekomonfile2 = YamlConfiguration.loadConfiguration(Pekomons2);
-        pekomonfile2.set("List", types);
-        FileConfiguration pekomonfile3 = YamlConfiguration.loadConfiguration(Pekomons3);
-        pekomonfile3.set("List", locations);
-        try {
-            pekomonfile1.save(Pekomons1);
-            pekomonfile2.save(Pekomons2);
-            pekomonfile3.save(Pekomons3);
-        } catch (Exception ex) {
-            LogError("Error saving Pekomons list: " + ex.getMessage());
-            return;
-        }
-        LogInfo("Pekomons list saved.");
-        for (Map.Entry<UUID, Tuple<Location, String>> entry: PekomonList.entrySet()) {
-            try {
-                Bukkit.getEntity(entry.getKey()).remove();
-            }catch (Exception ex){
+    public static void HoloPetFastWatcher(){
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (Entity entity : player.getNearbyEntities(32, 32, 32)) {
+                String holoPetData = getHoloPetData(entity);
+                if (!holoPetData.isBlank()){
+                    PigZombie pigZombie = (PigZombie) entity;
+                    EntityEquipment equipment = pigZombie.getEquipment();
+                    if (equipment == null) return;
+                    if(equipment.getChestplate().getType() == Material.ELYTRA){
+                        if(!entity.isInWater()){
+                            if (entity.getFallDistance() > 0.2D){
+                                ((PigZombie) entity).setGliding(true);
+                            }
+                        }
+                    }else{
+                        ((PigZombie) entity).setGliding(false);
+                    }
+                }
             }
         }
     }
 
+    public static void RefreshPekos() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            for (Entity entity : player.getNearbyEntities(32, 32, 32)) {
+                String holoPetData = getHoloPetData(entity);
+                if (!holoPetData.isBlank()){
+                    if (DisguiseAPI.isDisguised(entity)){
+                        if (!(((CraftEntity)entity).getHandle() instanceof PekoSrvFun_HoloPet)){
+                            String ownerName = entity.getCustomName().split(" ")[0];
+                            entity.remove();
+                            PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
+                        }else {
+                            if (((LivingEntity) entity).getHealth() <= 0){
+                                entity.remove();
+                                return;
+                            }
+                            if (entity.isDead()){
+                                entity.remove();
+                            }
+                            if (entity.isInvulnerable()){
+                                entity.setInvulnerable(false);
+                            }
 
-    public ItemStack SetSkull(String textureID, String name){
-        ItemStack skull =  new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);;
+                            if (((LivingEntity)entity).getHealth() < ((LivingEntity)entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() ){
+                                PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
+                                Inventory inventory = holoPet.inventory;
+                                int carrotIndex = -1;
+                                for (int i = 0; i < inventory.getSize(); i++) {
+                                    ItemStack item = inventory.getItem(i);
+                                    if (item == null) continue;
+                                    if (item.getType() == Material.CARROT) {
+                                        carrotIndex = i;
+                                    }
+                                }
+                                if (carrotIndex > -1){
+                                    ItemStack carrots = inventory.getItem(carrotIndex);
+                                    if (carrots.getAmount() > 1){
+                                        inventory.setItem(carrotIndex, new ItemStack(Material.CARROT,carrots.getAmount() - 1 ));
+                                    }else {
+                                        inventory.setItem(carrotIndex, new ItemStack(Material.AIR,1 ));
+                                    }
+                                    entity.getWorld().playSound(entity, Sound.ENTITY_GENERIC_EAT,1,1);
+                                    entity.getWorld().playSound(entity, Sound.ENTITY_GENERIC_EAT,1,1);
+                                    entity.getWorld().spawnParticle(Particle.ITEM_CRACK, entity.getLocation(), 25, 0.1,1,0.1,0,carrots);
+                                    entity.getWorld().spawnParticle(Particle.ITEM_CRACK, entity.getLocation(), 25, 0.5,1,0.5,0,carrots);
+                                    double newHealth = ((LivingEntity) entity).getHealth() + 1;
+                                    double maxHealth = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+                                    if (newHealth >= maxHealth){
+                                        ((PigZombie) holoPet.getBukkitEntity()).setHealth(maxHealth);
+                                    }else{
+                                        ((PigZombie) holoPet.getBukkitEntity()).setHealth(newHealth);
+                                    }
+                                }
+                            }
+                            PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
+                            String ownerName = entity.getCustomName().split(" ")[0].split("'")[0];
+                        }
+                    }else {
+                        String ownerName = entity.getCustomName().split(" ")[0].split("'")[0];
+                        PersistentDataContainer container = entity.getPersistentDataContainer();
+                        Inventory newInvent = null;
+                        if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
+                            String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
+                            try {
+                                newInvent = Utils.fromBase64(encodedInv);
+                            } catch (IOException e) {
+                                LogError("Error loading pet inventory.");
+                                LogError(e.getMessage());
+                            }
+                            entity.remove();
+                            PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
+                            if (newInvent != null){
+                                pet.inventory = newInvent;
+                            }
+                            if (pet.inventory != null){
+                                Utils.setPetInventory(pet);
+                            }
+                        }
+                    }
+                }else{
+                    if (entity.getType().equals(EntityType.ZOMBIFIED_PIGLIN)) {
+                        if (entity.getCustomName().toLowerCase().contains("clone")) {
+                            if (!DisguiseAPI.isDisguised(entity)){
+                                entity.remove();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public ItemStack SetSkull(String textureID, String name) {
+        ItemStack skull = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
+        ;
         SkullMeta meta = (SkullMeta) skull.getItemMeta();
         OfflinePlayer offlinePlayer2 = Bukkit.getOfflinePlayer("dummy_pekomon");
         meta.setOwningPlayer(offlinePlayer2);
         skull.setItemMeta(meta);
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
-        byte[] encodedData = Base64.getEncoder().encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", "http://textures.minecraft.net/texture/" + textureID ).getBytes());
+        byte[] encodedData = Base64.getEncoder().encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", "http://textures.minecraft.net/texture/" + textureID).getBytes());
         profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
         Field profileField = null;
         try {
@@ -403,26 +439,30 @@ public class PekoSrvFun extends JavaPlugin {
             e1.printStackTrace();
         }
         meta.setDisplayName("Pekomon head");
-        meta.setLore(Arrays.asList(name, "How terrible!"));
+        meta.setLore(Arrays.asList(name, "It died! How terrible!"));
         skull.setItemMeta(meta);
         return skull;
     }
 
-    public void killUndisguisedPekomons(Player player){
-       List<Entity> entityList = player.getNearbyEntities(40,40,40);
-       for (Entity entity :  entityList){
-           if (entity.getType().equals(EntityType.SLIME)){
-               Slime slime = (Slime) entity;
-               if (slime.getSize() == 0 ){
-                   String name = slime.getCustomName();
-                   if (!(name == null)){
-                       if (name.equals("Dinnerbone")){
-                           entity.remove();
-                       }
-                   }
-               }
-           }
-       }
+
+    String getPekomonData(Entity entity) {
+        if (!(entity.getType() == EntityType.SLIME)) return "";
+        PersistentDataContainer container = entity.getPersistentDataContainer();
+        if (!(container.has(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING))) return "";
+        String pekomonTypeKey;
+        pekomonTypeKey = container.get(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING);
+        if (pekomonTypeKey.isBlank()) return "";
+        return pekomonTypeKey;
+    }
+
+    static String getHoloPetData(Entity entity) {
+        if (!(entity.getType() == EntityType.ZOMBIFIED_PIGLIN)) return "";
+        PersistentDataContainer container = entity.getPersistentDataContainer();
+        if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return "";
+        String petTypeKey;
+        petTypeKey = container.get(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING);
+        if (petTypeKey.isBlank()) return "";
+        return petTypeKey;
     }
 
 }

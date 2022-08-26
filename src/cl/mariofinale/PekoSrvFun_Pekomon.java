@@ -8,14 +8,17 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.EntitySlime;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_18_R1.CraftWorld;
+import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public class PekoSrvFun_Pekomon extends EntitySlime {
     public PekoSrvFun_Pekomon(Location loc, String type){
-        super(EntityTypes.aD, ((CraftWorld) loc.getWorld()).getHandle());
+        super(EntityTypes.aG, ((CraftWorld) loc.getWorld()).getHandle());
         this.g(loc.getX(), loc.getY(), loc.getZ());
         persist = true;
 
@@ -61,13 +64,12 @@ public class PekoSrvFun_Pekomon extends EntitySlime {
         Entity entity = this.getBukkitEntity();
         Slime slime = (Slime) entity;
         slime.setSize(0);
-        slime.setCustomName("Dinnerbone");
         slime.setPersistent(true);
         slime.setRemoveWhenFarAway(false);
-
-        //LivingEntity livingEntity = (LivingEntity) entity;
-        //livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE,1));
-
+        PersistentDataContainer container = this.getBukkitEntity().getPersistentDataContainer();
+        if (container.has(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING)) {
+            type = container.get(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING);
+        }
         ItemStack skull;
         String name;
         switch (type){
@@ -131,20 +133,16 @@ public class PekoSrvFun_Pekomon extends EntitySlime {
                 name = "FlippedPekomonSmileSkull";
                 break;
         }
-
+        slime.setCustomName(name);
+        this.getBukkitEntity().getPersistentDataContainer().set(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING, type);
         MobDisguise disguise = new MobDisguise(DisguiseType.ZOMBIE);
         ZombieWatcher watcher = (ZombieWatcher) disguise.getWatcher();
         watcher.setSneaking(true);
         watcher.setInvisible(true);
         watcher.setCustomNameVisible(true);
-        watcher.setCustomName("Dinnerbone");
         watcher.setUpsideDown(true);
         watcher.setArmor(new ItemStack[]{null, null, null, skull});
         DisguiseAPI.disguiseToAll(entity, disguise);
-
-        watcher.setInternalUpsideDown(true);
-        watcher.setCustomName("Dinnerbone");
-        PekoSrvFun.PekomonList.put(entity.getUniqueId(), new Tuple<>(entity.getLocation(),name));
     }
 }
 
