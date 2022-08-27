@@ -1,12 +1,15 @@
 # PekoSrvFun
 Fun Minecraft Plugin for Spigot/PaperMC
 
+# Player commands
+ - /peko HoloPet {First name of holo}
+   - Spawns a clone of a holo that will follow you and fight for you.
 # Operator commands
  - /peko pekomon {PekomonType} 
    - Spawns a Pekomon at the Player location.
    
 # Pekomon Mechanics
- - Each small slime has a 15% chance of spawning as a Pekomon.
+ - Each small slime has a 0.2% chance of spawning as a Pekomon.
  - A Pekomon will always drop its head and a slime ball when killed.
  - Each Pekomon has a 93.1% chance of spawning as a male.
  - Each Pekomon type has a different spawning chance:
