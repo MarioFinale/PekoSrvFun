@@ -37,12 +37,12 @@ public class PathfinderGoalWalkNearPlayer extends PathfinderGoal
 
         if (!this.entity.getBukkitEntity().getWorld().getName().equals(Bukkit.getPlayer(player).getLocation().getWorld().getName())) return false;
 
-        if (this.entity.getBukkitEntity().getLocation().distance(Bukkit.getPlayer(player).getLocation()) > 35){
+        if (this.entity.getBukkitEntity().getLocation().distance(Bukkit.getPlayer(player).getLocation()) > 30){
             this.entity.getBukkitEntity().teleport(Bukkit.getPlayer(player).getLocation());
             return false;
         }
 
-        if (this.entity.getBukkitEntity().getLocation().distance(Bukkit.getPlayer(player).getLocation()) > 20){
+        if (this.entity.getBukkitEntity().getLocation().distance(Bukkit.getPlayer(player).getLocation()) > 15){
             int randomX = ThreadLocalRandom.current().nextInt(Bukkit.getPlayer(player).getLocation().getBlockX() - 3, Bukkit.getPlayer(player).getLocation().getBlockX() + 3);
             int randomY = Bukkit.getPlayer(player).getLocation().getBlockY(); //same height
             int randomZ = ThreadLocalRandom.current().nextInt(Bukkit.getPlayer(player).getLocation().getBlockZ() - 3, Bukkit.getPlayer(player).getLocation().getBlockZ() + 3);
