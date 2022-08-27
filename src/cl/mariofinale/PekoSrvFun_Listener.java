@@ -87,6 +87,9 @@ public class PekoSrvFun_Listener implements Listener{
         if (DisguiseAPI.isDisguised(event.getEntity()) && DisguiseAPI.isDisguised(event.getTarget())){
             event.setCancelled(true);
         }
+        if (DisguiseAPI.isDisguised(event.getTarget()) && event.getEntityType().equals(EntityType.IRON_GOLEM)){
+            event.setCancelled(true);
+        }
     }
 
     /** @noinspection unused*/

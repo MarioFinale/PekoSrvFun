@@ -346,7 +346,7 @@ public class PekoSrvFun extends JavaPlugin {
                     }
                 }else{
                     ((PigZombie) entity).setGliding(false);
-                }   
+                }
             }
         }
     }

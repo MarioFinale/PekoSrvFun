@@ -82,7 +82,9 @@ class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
 
 
         this.bT.a(0, new PathfinderGoalFloat(this));
-        this.bT.a(1, new PathfinderGoalWalkNearPlayer(this, 1.2D, Owner));
+        if (!(petName.equals("Suisei") || petName.equals("Rushia"))){
+            this.bT.a(1, new PathfinderGoalWalkNearPlayer(this, 1.2D, Owner));
+        }
         this.bT.a(3, new PathfinderGoalMeleeAttackHolo(this, 1.0D, false, 3.2D));
 
         this.bT.a(4, new PathfinderGoalMoveTowardsRestriction(this, 1.0D));
