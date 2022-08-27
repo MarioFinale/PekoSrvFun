@@ -102,7 +102,7 @@ public class PekoSrvFun extends JavaPlugin {
             public void run() {
                 HoloPetFastWatcher();
             }
-        }, 10, 20);
+        }, 0, 2);
         LogInfo("Fast refreshing task created.");
         LogInfo("PekoSrvFun loaded!");
     }
@@ -309,22 +309,44 @@ public class PekoSrvFun extends JavaPlugin {
 
     public static void HoloPetFastWatcher(){
         for (Player player : Bukkit.getOnlinePlayers()) {
-            for (Entity entity : player.getNearbyEntities(32, 32, 32)) {
+            for (Entity entity : player.getNearbyEntities(10, 10, 10)) {
                 String holoPetData = getHoloPetData(entity);
-                if (!holoPetData.isBlank()){
-                    PigZombie pigZombie = (PigZombie) entity;
-                    EntityEquipment equipment = pigZombie.getEquipment();
-                    if (equipment == null) return;
-                    if(equipment.getChestplate().getType() == Material.ELYTRA){
-                        if(!entity.isInWater()){
-                            if (entity.getFallDistance() > 0.2D){
-                                ((PigZombie) entity).setGliding(true);
-                            }
+                if (holoPetData.isBlank()) continue;
+                if (!DisguiseAPI.isDisguised(entity)){
+                    String ownerName = entity.getCustomName().split(" ")[0].split("'")[0];
+                    PersistentDataContainer container = entity.getPersistentDataContainer();
+                    Inventory newInvent = null;
+                    entity.remove();
+                    PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
+                    if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
+                        String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
+                        try {
+                            newInvent = Utils.fromBase64(encodedInv);
+                        } catch (IOException e) {
+                            LogError("Error loading pet inventory.");
+                            LogError(e.getMessage());
                         }
-                    }else{
-                        ((PigZombie) entity).setGliding(false);
+                        if (newInvent != null){
+                            pet.inventory = newInvent;
+                        }
+                        if (pet.inventory != null){
+                            Utils.setPetInventory(pet);
+                        }
                     }
                 }
+
+                PigZombie pigZombie = (PigZombie) entity;
+                EntityEquipment equipment = pigZombie.getEquipment();
+                if (equipment == null) return;
+                if(equipment.getChestplate().getType() == Material.ELYTRA){
+                    if(!entity.isInWater()){
+                        if (entity.getFallDistance() > 0.2D){
+                            ((PigZombie) entity).setGliding(true);
+                        }
+                    }
+                }else{
+                    ((PigZombie) entity).setGliding(false);
+                }   
             }
         }
     }
@@ -389,6 +411,8 @@ public class PekoSrvFun extends JavaPlugin {
                         String ownerName = entity.getCustomName().split(" ")[0].split("'")[0];
                         PersistentDataContainer container = entity.getPersistentDataContainer();
                         Inventory newInvent = null;
+                        entity.remove();
+                        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
                         if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
                             String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
                             try {
@@ -397,8 +421,6 @@ public class PekoSrvFun extends JavaPlugin {
                                 LogError("Error loading pet inventory.");
                                 LogError(e.getMessage());
                             }
-                            entity.remove();
-                            PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
                             if (newInvent != null){
                                 pet.inventory = newInvent;
                             }
@@ -409,9 +431,12 @@ public class PekoSrvFun extends JavaPlugin {
                     }
                 }else{
                     if (entity.getType().equals(EntityType.ZOMBIFIED_PIGLIN)) {
-                        if (entity.getCustomName().toLowerCase().contains("clone")) {
-                            if (!DisguiseAPI.isDisguised(entity)){
-                                entity.remove();
+                        String entityName = entity.getCustomName();
+                        if (entityName != null){
+                            if (entityName.contains("clone")) {
+                                if (!DisguiseAPI.isDisguised(entity)){
+                                    entity.remove();
+                                }
                             }
                         }
                     }

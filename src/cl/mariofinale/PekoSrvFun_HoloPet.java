@@ -135,7 +135,6 @@ class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
         ((PigZombie) this.getBukkitEntity()).setRemoveWhenFarAway(false);
 
 
-
         PekoSrvFun.LogInfo("Entity ID: " + this.getBukkitEntity().getEntityId());
         PekoSrvFun.LogInfo("Location: " + this.getBukkitEntity().getLocation().toString());
         PlayerDisguise disguise = new PlayerDisguise(petType, petType);
@@ -144,9 +143,6 @@ class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
         watcher.setCustomName(Owner + "'s " + petName +" clone");
         watcher.setCustomNameVisible(true);
         DisguiseAPI.disguiseToAll(this.getBukkitEntity(), disguise);
-
-        double currentHealth = ((LivingEntity) this.getBukkitEntity()).getHealth();
-        double maxHealth = ((LivingEntity) this.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
         this.inventory = Bukkit.createInventory(this, 9, this.petName + "'s Inventory | HP: 20/20" );
 
     }

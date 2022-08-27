@@ -73,7 +73,14 @@ public class PekoSrvFun_Commands implements CommandExecutor {
                 return false;
             }
         }
-        inventory.setItem(SkullIndex, new ItemStack(Material.AIR, 1));
+        ItemStack skull = inventory.getItem(SkullIndex);
+        if (skull.getAmount() > 1){
+            skull.setAmount(skull.getAmount() - 1);
+        }else if(skull.getAmount() == 1){
+            inventory.setItem(SkullIndex, new ItemStack(Material.AIR, 1));
+        }else{
+            return false;
+        }
         if (EmeraldIndex > -1){
             ItemStack emeralds = inventory.getItem(EmeraldIndex);
             if (emeralds.getAmount() > 1){

@@ -22,6 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
@@ -44,6 +45,40 @@ public class PekoSrvFun_Listener implements Listener{
             SetSlimePekomon(entity);
             return;
         }
+    }
+
+    /** @noinspection unused*/
+    @EventHandler
+    public void onEntityTeleportEvent(EntityTeleportEvent event){
+        if(event.isCancelled()) return;
+        if(event.getTo() == null) return;
+        Entity pet = event.getEntity();
+        if (!pet.isValid())return;
+        if (!isHoloPet(event.getEntity())) return;
+        if (DisguiseAPI.isDisguised(pet)) return;
+
+        String holoPetData = PekoSrvFun.getHoloPetData(pet);
+        String ownerName = pet.getCustomName().split(" ")[0].split("'")[0];
+        PersistentDataContainer container = pet.getPersistentDataContainer();
+        Inventory newInvent = null;
+        PekoSrvFun_HoloPet newpet = new PekoSrvFun_HoloPet(event.getTo(), ownerName, holoPetData);
+        pet.remove();
+        if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
+            String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
+            try {
+                newInvent = Utils.fromBase64(encodedInv);
+            } catch (IOException e) {
+                PekoSrvFun.LogError("Error loading pet inventory.");
+                PekoSrvFun.LogError(e.getMessage());
+            }
+            if (newInvent != null){
+                newpet.inventory = newInvent;
+            }
+            if (newpet.inventory != null){
+                Utils.setPetInventory(newpet);
+            }
+        }
+        event.setCancelled(true);
     }
 
     /** @noinspection unused*/

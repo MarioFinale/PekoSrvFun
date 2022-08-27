@@ -13,6 +13,7 @@ public class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
     private EntityInsentient entity;
     private Location loc;
     private NavigationAbstract navigation;
+    PathEntity destination;
 
     public PathfinderTryPreventDeathByCreeper(EntityInsentient entity, double speedMultiplier)
     {
@@ -23,19 +24,14 @@ public class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
 
     public boolean a()
     {
-        c();
-        return true;
-    }
-
-    public void c()
-    {
         boolean nearFusedCreeper = false;
+        if (entity == null) return  false;
         Location creeperLocation = entity.getBukkitEntity().getLocation();
 
         for (Entity ent : entity.getBukkitEntity().getNearbyEntities(3.5D,3.5D,3.5D)){
             if (ent.getType().equals(EntityType.CREEPER)){
                 creeperLocation = ent.getLocation();
-                if (((Creeper) ent).getFuseTicks() > 4){
+                if (((Creeper) ent).getFuseTicks() > 5){
                     nearFusedCreeper = true;
                     break;
                 }
@@ -58,10 +54,22 @@ public class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
             }
 
             this.loc = new Location( this.entity.getBukkitEntity().getWorld() ,xvalue, this.entity.getBukkitEntity().getLocation().getY() + 1, zvalue);
-            PathEntity pathEntity = this.navigation.a(loc.getX(), loc.getY(), loc.getZ(), 3);
-            this.navigation.a(pathEntity, speed);
-
+            destination = this.navigation.a(loc.getX(), loc.getY(), loc.getZ(), 3);
+            return true;
         }
+        return false;
     }
 
+    public void c()
+    {
+        this.navigation.a(destination, speed);
+    }
+
+    public boolean b(){
+        return false;
+    }
+
+    public void d(){
+
+    }
 }
