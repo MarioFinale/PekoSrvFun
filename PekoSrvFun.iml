@@ -10,7 +10,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://F:/lib/Lib 1.19.2/authlib-3.5.41.jar!/" />
+          <root url="jar://F:/lib/Lib 1.19.2/spigot-api-1.19.2-R0.1-SNAPSHOT.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -137,6 +137,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://F:/lib/Lib 1.19.2/authlib-3.5.41.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

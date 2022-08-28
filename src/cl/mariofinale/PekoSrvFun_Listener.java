@@ -2,20 +2,26 @@ package cl.mariofinale;
 import me.libraryaddict.disguise.*;
 import me.libraryaddict.disguise.disguisetypes.*;
 import me.libraryaddict.disguise.disguisetypes.watchers.*;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.plugins.Economy_TAEcon;
+import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.world.entity.monster.EntityPigZombie;
 import net.minecraft.world.item.Items;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
 import org.bukkit.entity.*;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -98,17 +104,28 @@ public class PekoSrvFun_Listener implements Listener{
             if (event.getBedEnterResult() ==  PlayerBedEnterEvent.BedEnterResult.NOT_SAFE){
                 Collection<Entity> nearbyEntities = event.getBed().getLocation().getWorld().getNearbyEntities(event.getBed().getLocation(), 8,5,8);
                 int petsNear = 0;
+                int monstersNear = 0;
+
                 for (Entity ent: nearbyEntities) {
                     if (ent.getPersistentDataContainer().has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING)){
                         petsNear += 1;
+                        continue;
                     }
+
                     if (ent.getType() == EntityType.PLAYER){
                         petsNear += 1;
+                        continue;
+                    }
+                    if (ent instanceof  Monster){
+                        monstersNear += 1;
                     }
                 }
+
+
                 if (nearbyEntities.size() <= petsNear){
                     event.setCancelled(false);
                     event.getPlayer().sleep(event.getBed().getLocation(), true);
+                    event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("Sleeping through this night."));
                 }
             }
         }
@@ -151,7 +168,6 @@ public class PekoSrvFun_Listener implements Listener{
             holoPet.inventory.remove(event.getItemDrop().getItemStack());
             Utils.setPetInventory(holoPet);
         }
-
     }
 
     /** @noinspection unused*/
@@ -235,6 +251,36 @@ public class PekoSrvFun_Listener implements Listener{
             holoPet.inventory = newInventory;
             player.openInventory(holoPet.inventory);
         }
+    }
+
+
+    /** @noinspection unused*/
+    @EventHandler
+    public void onPlayerInteractEvent(PlayerInteractEvent event){
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
+            if (event.getClickedBlock() == null) return;
+            if (event.getClickedBlock().getLocation().getWorld() == null) return;
+            if (event.getClickedBlock().getBlockData() instanceof Bed){
+                Collection<Entity> nearbyEntities = event.getClickedBlock().getLocation().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(),10,10,10);
+                for (Entity ent: nearbyEntities) {
+                    if (ent.getPersistentDataContainer().has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING)){
+                        PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet)((CraftEntity) ent).getHandle();
+                        if (pet.getPetName().equals("Suisei")){
+                            event.setCancelled(true);
+                            event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("You may not sleep now; Suisei is near."));
+                            return;
+                        }
+                        if (pet.getPetName().equals("Rushia")){
+                            event.setCancelled(true);
+                            event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("You may not sleep now; Rushia is near."));
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+
     }
 
 
