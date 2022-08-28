@@ -182,23 +182,21 @@ public class PekoSrvFun_Listener implements Listener{
 
     void RightClickedOnPet(Player player, Entity pet){
         if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
-            if (player.isSneaking()) return;
-            if (player.getEquipment() != null){
+            if (player.getEquipment() != null ){
                 if (player.getEquipment().getItemInMainHand().getType() == Material.NAME_TAG){
                     PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
                     Disguise disguise = DisguiseAPI.getDisguise(holoPet.getBukkitEntity());
                     disguise.setDynamicName(true);
                 }
-            }else {
-                PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-                double currentHealth = ((LivingEntity) holoPet.getBukkitEntity()).getHealth();
-                double maxHealth = ((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-                Inventory newInventory = Bukkit.createInventory(holoPet, 9, holoPet.getPetName() + "'s Inventory | HP: " + round(currentHealth) + "/" + round(maxHealth) );
-                newInventory.setContents(holoPet.inventory.getContents());
-                holoPet.inventory = newInventory;
-                player.openInventory(holoPet.inventory);
             }
-
+            if (player.isSneaking()) return;
+            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
+            double currentHealth = ((LivingEntity) holoPet.getBukkitEntity()).getHealth();
+            double maxHealth = ((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+            Inventory newInventory = Bukkit.createInventory(holoPet, 9, holoPet.getPetName() + "'s Inventory | HP: " + round(currentHealth) + "/" + round(maxHealth) );
+            newInventory.setContents(holoPet.inventory.getContents());
+            holoPet.inventory = newInventory;
+            player.openInventory(holoPet.inventory);
         }
     }
 
