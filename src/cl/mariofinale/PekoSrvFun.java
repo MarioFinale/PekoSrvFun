@@ -66,7 +66,7 @@ public class PekoSrvFun extends JavaPlugin {
     static NamespacedKey holoPetInventoryKey;
     static NamespacedKey pekomonTypeKey;
     static NamespacedKey pekomonLastBreedKey;
-    private static Plugin plugin;
+    public static Plugin plugin;
 
     @Override
     public void onEnable() {

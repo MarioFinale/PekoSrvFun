@@ -2,11 +2,14 @@ package cl.mariofinale;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.io.BukkitObjectInputStream;
@@ -17,9 +20,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Base64;
+import java.util.List;
 
 public class Utils {
 
+
+    public static boolean getCustomBedOcuppied(Block b) {
+        List<MetadataValue> metadataValueList = b.getMetadata("Occupied");
+        for (MetadataValue metadataValue : metadataValueList) {
+            return metadataValue.asBoolean();
+        }
+        return false;
+    }
+
+    public static void setCustomBedOcuppied(Block bed, boolean occupied) {
+        bed.setMetadata("Occupied", new FixedMetadataValue(PekoSrvFun.plugin, occupied));
+    }
 
     public static String GetMinecraftUsernameByType(String holoType) {
         String name = "";

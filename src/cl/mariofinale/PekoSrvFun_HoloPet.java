@@ -45,7 +45,6 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder {
     private String petType;
     private String petName;
 
-
     public PekoSrvFun_HoloPet(Location loc, String playerName, String pType, String customName){
         super(EntityTypes.bj, ((CraftWorld) loc.getWorld()).getHandle());
         double holoSpeed = 0.30D;
