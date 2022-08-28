@@ -3,6 +3,7 @@ package cl.mariofinale;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.*;
 
+import net.minecraft.network.syncher.DataWatcherObject;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.sounds.SoundEffect;
 import net.minecraft.sounds.SoundEffects;
@@ -17,10 +18,10 @@ import net.minecraft.world.entity.boss.wither.EntityWither;
 import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.hoglin.EntityHoglin;
 import net.minecraft.world.entity.player.EntityHuman;
-
 import net.minecraft.world.entity.projectile.EntityArrow;
 import net.minecraft.world.entity.projectile.ProjectileHelper;
 import net.minecraft.world.item.Items;
+
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.data.BlockData;
@@ -129,7 +130,6 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
         this.craftAttributes.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(holoSpeed);
         this.craftAttributes.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0D);
 
-
         ((CraftWorld) loc.getWorld()).addEntity(this, CreatureSpawnEvent.SpawnReason.CUSTOM);
 
         PersistentDataContainer container = this.getBukkitEntity().getPersistentDataContainer();
@@ -235,7 +235,7 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
         }
     }
 
-    protected EntityArrow getArrow(net.minecraft.world.item.ItemStack itemstack, float f) {
+    private EntityArrow getArrow(net.minecraft.world.item.ItemStack itemstack, float f) {
         return ProjectileHelper.a(this, itemstack, f);
     }
 }

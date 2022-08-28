@@ -96,7 +96,7 @@ public class PekoSrvFun extends JavaPlugin {
         }, 30, 60);
         LogInfo("Refreshing task created.");
         LogInfo("Creating fast refreshing task...");
-        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> HoloPetFastWatcher(), 0, 2);
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, PekoSrvFun::HoloPetFastWatcher, 0, 2);
         LogInfo("Fast refreshing task created.");
         LogInfo("PekoSrvFun loaded!");
     }
@@ -448,7 +448,7 @@ public class PekoSrvFun extends JavaPlugin {
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
         byte[] encodedData = Base64.getEncoder().encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", "http://textures.minecraft.net/texture/" + textureID).getBytes());
         profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
-        Field profileField = null;
+        Field profileField;
         try {
             profileField = meta.getClass().getDeclaredField("profile");
             profileField.setAccessible(true);

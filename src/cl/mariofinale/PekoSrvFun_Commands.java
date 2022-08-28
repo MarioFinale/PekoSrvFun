@@ -1,5 +1,4 @@
 package cl.mariofinale;
-import net.minecraft.world.entity.monster.EntitySkeleton;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;

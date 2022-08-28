@@ -38,7 +38,7 @@ public class Utils {
     }
 
     public static String GetMinecraftUsernameByType(String holoType) {
-        String name = "";
+        String name;
         holoType = holoType.toLowerCase();
         switch (holoType) {
             case "botan":
@@ -196,7 +196,7 @@ public class Utils {
     }
 
     public static String GetHoloPetNameByMinecraftUsername(String holoName) {
-        String holoType = "";
+        String holoType;
         switch (holoName) {
             case "botaaan":
                 holoType = "Botan";
@@ -415,7 +415,6 @@ public class Utils {
             }
             equipment.setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING,1));
         }
-
             if (inventory.contains(Material.LEATHER_HELMET)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -466,8 +465,6 @@ public class Utils {
                     }
                 }
             }
-
-
             if (inventory.contains(Material.LEATHER_CHESTPLATE)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -579,8 +576,6 @@ public class Utils {
                     }
                 }
             }
-
-
             if (inventory.contains(Material.LEATHER_BOOTS)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -631,8 +626,6 @@ public class Utils {
                     }
                 }
             }
-
-
             if (inventory.contains(Material.WOODEN_SWORD)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -743,28 +736,8 @@ public class Utils {
                     }
                 }
             }
-
-
         PersistentDataContainer container =  holoPet.getBukkitEntity().getPersistentDataContainer();
         container.set(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING, Utils.toBase64(inventory));
-
-    }
-
-    public static Object getPrivateField(String fieldName, Class clazz, Object object)
-    {
-        Field field;
-        Object o = null;
-        try
-        {
-            field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            o = field.get(object);
-        }
-        catch(NoSuchFieldException | IllegalAccessException e)
-        {
-            e.printStackTrace();
-        }
-        return o;
     }
 
 }

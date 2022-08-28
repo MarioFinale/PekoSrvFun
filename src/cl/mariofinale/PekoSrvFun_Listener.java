@@ -433,29 +433,6 @@ public class PekoSrvFun_Listener implements Listener{
     }
 
 
-    public void SetFishPekomon(Entity entity){
-        Random prob = new Random();
-        int tp = prob.nextInt(100);
-        if (tp <= 1){
-            Random r = new Random();
-            int res = r.nextInt(2);
-            ItemStack skull;
-            if (res == 0){
-                skull =  PekoSrvFun.PekomonSmileSkull;
-            }else{
-                skull =  PekoSrvFun.PekomonLaughSkull;
-            }
-            MobDisguise disguise = new MobDisguise(DisguiseType.ZOMBIE);
-            ZombieWatcher watcher = (ZombieWatcher) disguise.getWatcher();
-            watcher.setInvisible(true);
-            watcher.setBaby(true);
-            watcher.setCustomName("Wild PekoMon");
-            watcher.setCustomNameVisible(true);
-            watcher.setArmor(new ItemStack[]{null, null, null, skull});
-            DisguiseAPI.disguiseToAll(entity, disguise);
-        }
-    }
-
     public static void SetSlimePekomon(Entity entity){
         Slime slime = (Slime) entity;
         if (slime.getSize() == 1){
@@ -512,7 +489,7 @@ public class PekoSrvFun_Listener implements Listener{
                 name = "CoolF";
             }
         }
-        PekoSrvFun_Pekomon pekomon = new PekoSrvFun_Pekomon(location, name);
+         new PekoSrvFun_Pekomon(location, name);
     }
 
     boolean isPekoMon(Entity entity){
@@ -529,7 +506,6 @@ public class PekoSrvFun_Listener implements Listener{
 
     boolean isHoloPet(Entity entity){
         if (!(DisguiseAPI.isDisguised(entity))) return false;
-        FlagWatcher watcher = DisguiseAPI.getDisguise(entity).getWatcher();
         PersistentDataContainer container = entity.getPersistentDataContainer();
         if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return false;
         String holoPetTypeKey;
