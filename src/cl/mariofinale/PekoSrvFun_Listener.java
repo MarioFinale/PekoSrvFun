@@ -184,9 +184,7 @@ public class PekoSrvFun_Listener implements Listener{
         if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
             if (player.getEquipment() != null ){
                 if (player.getEquipment().getItemInMainHand().getType() == Material.NAME_TAG){
-                    PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-                    Disguise disguise = DisguiseAPI.getDisguise(holoPet.getBukkitEntity());
-                    disguise.setDynamicName(true);
+                    return;
                 }
             }
             if (player.isSneaking()) return;
