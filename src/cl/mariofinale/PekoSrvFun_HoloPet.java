@@ -41,6 +41,7 @@ import java.util.*;
 
 class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder {
     public Inventory inventory;
+    public boolean Sitting;
     private String Owner;
     private String petType;
     private String petName;
@@ -137,12 +138,17 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder {
         ((Zombie) this.getBukkitEntity()).setPersistent(true);
         ((Zombie) this.getBukkitEntity()).setRemoveWhenFarAway(false);
 
+        if (petName.equals("Suisei") || petName.equals("Rushia")){
+            ((Zombie) this.getBukkitEntity()).setCanBreakDoors(true);
+        }else {
+            ((Zombie) this.getBukkitEntity()).setCanBreakDoors(false);
+        }
+
         PekoSrvFun.LogInfo("Entity ID: " + this.getBukkitEntity().getEntityId());
         PekoSrvFun.LogInfo("Location: " + this.getBukkitEntity().getLocation().toString());
         PlayerDisguise disguise = new PlayerDisguise(petType, petType);
         disguise.setReplaceSounds(true);
         FlagWatcher watcher = disguise.getWatcher();
-
 
         if (customName.isBlank() || customName.isEmpty()){
             this.getBukkitEntity().setCustomName(Owner + "'s " + petName +" clone");

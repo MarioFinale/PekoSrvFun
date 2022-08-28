@@ -14,6 +14,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.*;
@@ -22,10 +23,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import static java.lang.Math.round;
 
@@ -80,6 +78,7 @@ public class PekoSrvFun_Listener implements Listener{
         event.setCancelled(true);
     }
 
+
     /** @noinspection unused*/
     @EventHandler
     public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent event){
@@ -88,6 +87,30 @@ public class PekoSrvFun_Listener implements Listener{
         }
         if (DisguiseAPI.isDisguised(event.getTarget()) && event.getEntityType().equals(EntityType.IRON_GOLEM)){
             event.setCancelled(true);
+        }
+    }
+
+
+    /** @noinspection unused*/
+    @EventHandler
+    public void onPlayerBedEnterEvent(PlayerBedEnterEvent event){
+        if (event.isCancelled() ){
+            if (event.getBedEnterResult() ==  PlayerBedEnterEvent.BedEnterResult.NOT_SAFE){
+                Collection<Entity> nearbyEntities = event.getBed().getLocation().getWorld().getNearbyEntities(event.getBed().getLocation(), 8,5,8);
+                int petsNear = 0;
+                for (Entity ent: nearbyEntities) {
+                    if (ent.getPersistentDataContainer().has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING)){
+                        petsNear += 1;
+                    }
+                    if (ent.getType() == EntityType.PLAYER){
+                        petsNear += 1;
+                    }
+                }
+                if (nearbyEntities.size() <= petsNear){
+                    event.setCancelled(false);
+                    event.getPlayer().sleep(event.getBed().getLocation(), true);
+                }
+            }
         }
     }
 
@@ -187,8 +210,24 @@ public class PekoSrvFun_Listener implements Listener{
                     return;
                 }
             }
-            if (player.isSneaking()) return;
             PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
+            if (player.isSneaking()) {
+                if (!(holoPet.getPetName().equals("Suisei") || holoPet.getPetName().equals("Rushia"))){
+                    if (player.getEquipment() != null ){
+                        if (player.getEquipment().getItemInMainHand().getType() == Material.AIR){
+                            if (holoPet.Sitting){
+                                holoPet.Sitting = false;
+                                DisguiseAPI.getDisguise(holoPet.getBukkitEntity()).getWatcher().setSneaking(false);
+                            }else {
+                                holoPet.Sitting = true;
+                                DisguiseAPI.getDisguise(holoPet.getBukkitEntity()).getWatcher().setSneaking(true);
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+
             double currentHealth = ((LivingEntity) holoPet.getBukkitEntity()).getHealth();
             double maxHealth = ((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
             Inventory newInventory = Bukkit.createInventory(holoPet, 9, holoPet.getPetName() + "'s Inventory | HP: " + round(currentHealth) + "/" + round(maxHealth) );
@@ -206,6 +245,7 @@ public class PekoSrvFun_Listener implements Listener{
     /** @noinspection unused*/
     @EventHandler
     public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent event){
+        if(event.getHand().equals(EquipmentSlot.HAND)) return;
         Player player = event.getPlayer();
         PlayerInventory inventory = player.getInventory();
         Entity entity = event.getRightClicked();
