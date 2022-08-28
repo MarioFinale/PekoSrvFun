@@ -10,32 +10,21 @@ import net.minecraft.world.entity.ai.navigation.NavigationAbstract;
 import net.minecraft.world.level.pathfinder.PathEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Bed;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
-import org.bukkit.util.BoundingBox;
 
-import java.util.Collection;
-import java.util.EnumSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class PathfinderGoalWalkNearPlayer extends PathfinderGoal
 {
-    private double speed;
-    private EntityInsentient entity;
-    private String player;
-    private Location loc;
-    private NavigationAbstract navigation;
-    PathEntity destination;
+    private final double speed;
+    private final EntityInsentient entity;
+    private final String player;
+    private final NavigationAbstract navigation;
+    private PathEntity destination;
     private Block lastSleepingBlock;
 
     public PathfinderGoalWalkNearPlayer(EntityInsentient entity, double speed, String player)
@@ -58,7 +47,6 @@ public class PathfinderGoalWalkNearPlayer extends PathfinderGoal
         if (!watcher.isSleeping() && tPlayer.isSleeping()){
             Block standingBlock = this.entity.getBukkitEntity().getLocation().subtract(0,0.5,0).getBlock();
             String blockTypeName = standingBlock.getType().toString();
-            BlockState state = standingBlock.getState();
             BlockData data = standingBlock.getBlockData();
             if (blockTypeName.matches(".+?_BED")){
                 Location standingBlockLocation = standingBlock.getLocation();
@@ -80,10 +68,11 @@ public class PathfinderGoalWalkNearPlayer extends PathfinderGoal
                             return false;
 
                         }else {
-                            Block option1 = standingBlockLocation.getWorld().getBlockAt(standingBlockLocation.clone().subtract(1,0,0));
-                            Block option2 = standingBlockLocation.getWorld().getBlockAt(standingBlockLocation.clone().add(1,0,0));
-                            Block option3 = standingBlockLocation.getWorld().getBlockAt(standingBlockLocation.clone().subtract(0,0,1));
-                            Block option4 = standingBlockLocation.getWorld().getBlockAt(standingBlockLocation.clone().add(0,0,1));
+                            World world = standingBlock.getWorld();
+                            Block option1 = world.getBlockAt(standingBlockLocation.clone().subtract(1,0,0));
+                            Block option2 = world.getBlockAt(standingBlockLocation.clone().add(1,0,0));
+                            Block option3 = world.getBlockAt(standingBlockLocation.clone().subtract(0,0,1));
+                            Block option4 = world.getBlockAt(standingBlockLocation.clone().add(0,0,1));
 
                             if (option1.getBlockData() instanceof Bed){
                                 if (((Bed) option1.getBlockData()).getPart() == Bed.Part.HEAD){
@@ -148,18 +137,18 @@ public class PathfinderGoalWalkNearPlayer extends PathfinderGoal
 
         }
 
-        if (!this.entity.getBukkitEntity().getWorld().getName().equals(Bukkit.getPlayer(player).getLocation().getWorld().getName())) return false;
+        if (!this.entity.getBukkitEntity().getWorld().getName().equals(tPlayer.getLocation().getWorld().getName())) return false;
 
-        if (this.entity.getBukkitEntity().getLocation().distance(Bukkit.getPlayer(player).getLocation()) > 30){
-            this.entity.getBukkitEntity().teleport(Bukkit.getPlayer(player).getLocation());
+        if (this.entity.getBukkitEntity().getLocation().distance(tPlayer.getLocation()) > 30){
+            this.entity.getBukkitEntity().teleport(tPlayer.getLocation());
             return false;
         }
 
-        if (this.entity.getBukkitEntity().getLocation().distance(Bukkit.getPlayer(player).getLocation()) > 15){
-            int randomX = ThreadLocalRandom.current().nextInt(Bukkit.getPlayer(player).getLocation().getBlockX() - 3, Bukkit.getPlayer(player).getLocation().getBlockX() + 3);
-            int randomY = Bukkit.getPlayer(player).getLocation().getBlockY(); //same height
-            int randomZ = ThreadLocalRandom.current().nextInt(Bukkit.getPlayer(player).getLocation().getBlockZ() - 3, Bukkit.getPlayer(player).getLocation().getBlockZ() + 3);
-            this.loc = new Location(Bukkit.getPlayer(player).getWorld(), (double) randomX, (double) randomY, (double) randomZ);
+        if (this.entity.getBukkitEntity().getLocation().distance(tPlayer.getLocation()) > 15){
+            int randomX = ThreadLocalRandom.current().nextInt(tPlayer.getLocation().getBlockX() - 3, tPlayer.getLocation().getBlockX() + 3);
+            int randomY = tPlayer.getLocation().getBlockY(); //same height
+            int randomZ = ThreadLocalRandom.current().nextInt(tPlayer.getLocation().getBlockZ() - 3, tPlayer.getLocation().getBlockZ() + 3);
+            Location loc = new Location(tPlayer.getWorld(), randomX, randomY, randomZ);
             destination = this.navigation.a(loc.getX(), loc.getY(), loc.getZ(), 1);
             return true;
         }

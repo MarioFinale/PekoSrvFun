@@ -4,9 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
-import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
-import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -92,19 +90,13 @@ public class PekoSrvFun extends JavaPlugin {
         holoPetInventoryKey = new NamespacedKey(this, "holoPetInventoryKey");
         LogInfo("Namespaced Keys created.");
         LogInfo("Creating slow refreshing task...");
-        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            public void run() {
-                RefreshPekomons();
-                RefreshPekos();
-            }
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            RefreshPekomons();
+            RefreshPekos();
         }, 30, 60);
         LogInfo("Refreshing task created.");
         LogInfo("Creating fast refreshing task...");
-        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            public void run() {
-                HoloPetFastWatcher();
-            }
-        }, 0, 2);
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> HoloPetFastWatcher(), 0, 2);
         LogInfo("Fast refreshing task created.");
         LogInfo("PekoSrvFun loaded!");
     }
@@ -401,11 +393,7 @@ public class PekoSrvFun extends JavaPlugin {
                                     entity.getWorld().spawnParticle(Particle.ITEM_CRACK, entity.getLocation(), 25, 0.5,1,0.5,0,carrots);
                                     double newHealth = ((LivingEntity) entity).getHealth() + 1;
                                     double maxHealth = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-                                    if (newHealth >= maxHealth){
-                                        ((Zombie) holoPet.getBukkitEntity()).setHealth(maxHealth);
-                                    }else{
-                                        ((Zombie) holoPet.getBukkitEntity()).setHealth(newHealth);
-                                    }
+                                    ((Zombie) holoPet.getBukkitEntity()).setHealth(Math.min(newHealth, maxHealth));
                                 }
                             }
                             PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();

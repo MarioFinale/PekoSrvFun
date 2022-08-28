@@ -147,6 +147,6 @@ public class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
     }
 
     protected double a(EntityLiving var0) {
-        return (double)(this.a.cW() * range * this.a.cW() * range + var0.cW());
+        return this.a.cW() * range * this.a.cW() * range + var0.cW();
     }
 }

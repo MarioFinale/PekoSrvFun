@@ -41,11 +41,6 @@ public class Utils {
         String name = "";
         holoType = holoType.toLowerCase();
         switch (holoType) {
-            case "pekora":
-            case "peko":
-            case "pek":
-                name = "usadapekora";
-                break;
             case "botan":
                 name = "botaaan";
                 break;
@@ -190,6 +185,9 @@ public class Utils {
             case "mumei":
                 name = "nana_mumei";
                 break;
+            case "pekora":
+            case "peko":
+            case "pek":
             default:
                 name = "usadapekora";
                 break;
@@ -200,9 +198,6 @@ public class Utils {
     public static String GetHoloPetNameByMinecraftUsername(String holoName) {
         String holoType = "";
         switch (holoName) {
-            case "usadapekora":
-                holoType = "Pekora";
-                break;
             case "botaaan":
                 holoType = "Botan";
                 break;
@@ -329,6 +324,7 @@ public class Utils {
             case "nana_mumei":
                 holoType = "Mumei";
                 break;
+            case "usadapekora":
             default:
                 holoType = "Pekora";
                 break;
@@ -420,7 +416,6 @@ public class Utils {
             equipment.setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING,1));
         }
 
-        if (equipment.getHelmet().getType() == Material.AIR) {
             if (inventory.contains(Material.LEATHER_HELMET)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -471,9 +466,8 @@ public class Utils {
                     }
                 }
             }
-        }
 
-        if (equipment.getChestplate().getType() == Material.AIR) {
+
             if (inventory.contains(Material.LEATHER_CHESTPLATE)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -534,9 +528,7 @@ public class Utils {
                     }
                 }
             }
-        }
 
-        if (equipment.getLeggings().getType() == Material.AIR) {
             if (inventory.contains(Material.LEATHER_LEGGINGS)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -587,9 +579,8 @@ public class Utils {
                     }
                 }
             }
-        }
 
-        if (equipment.getBoots().getType() == Material.AIR) {
+
             if (inventory.contains(Material.LEATHER_BOOTS)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -640,9 +631,8 @@ public class Utils {
                     }
                 }
             }
-        }
 
-        if (equipment.getItemInMainHand().getType() == Material.AIR) {
+
             if (inventory.contains(Material.WOODEN_SWORD)) {
                 ItemStack[] contents = inventory.getStorageContents();
                 for (ItemStack stack : contents) {
@@ -743,7 +733,18 @@ public class Utils {
                     }
                 }
             }
-        }
+            if (inventory.contains(Material.BOW) && inventory.contains(Material.ARROW) ) {
+                ItemStack[] contents = inventory.getStorageContents();
+                for (ItemStack stack : contents) {
+                    if (stack == null) continue;
+                    if (stack.getType() == Material.BOW) {
+                        equipment.setItemInMainHand(stack);
+                        break;
+                    }
+                }
+            }
+
+
         PersistentDataContainer container =  holoPet.getBukkitEntity().getPersistentDataContainer();
         container.set(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING, Utils.toBase64(inventory));
 

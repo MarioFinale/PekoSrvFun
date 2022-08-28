@@ -43,11 +43,9 @@ public class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
         this.i = var4;
         this.a(EnumSet.of(Type.b));
         if (var1 == EntityHuman.class) {
-            this.g = PathfinderTargetCondition.b().a((double)var2).a((var1x) -> {
-                return IEntitySelector.b(var0).test(var1x);
-            });
+            this.g = PathfinderTargetCondition.b().a(var2).a((var1x) -> IEntitySelector.b(var0).test(var1x));
         } else {
-            this.g = PathfinderTargetCondition.b().a((double)var2);
+            this.g = PathfinderTargetCondition.b().a(var2);
         }
 
     }
@@ -67,9 +65,7 @@ public class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
             if (this.targetEntityClass == EntityHuman.class) {
                 this.c = this.entity.s.a(this.g, this.entity, this.entity.df(), this.entity.dj(), this.entity.dl());
             } else {
-                this.c = this.entity.s.a(this.entity.s.a(this.targetEntityClass, this.entity.cy().c((double)this.d, 3.0D, (double)this.d), (var0) -> {
-                    return true;
-                }), this.g, this.entity, this.entity.df(), this.entity.dj(), this.entity.dl());
+                this.c = this.entity.s.a(this.entity.s.a(this.targetEntityClass, this.entity.cy().c(this.d, 3.0D, this.d), (var0) -> true), this.g, this.entity, this.entity.df(), this.entity.dj(), this.entity.dl());
             }
 
             return this.c != null;

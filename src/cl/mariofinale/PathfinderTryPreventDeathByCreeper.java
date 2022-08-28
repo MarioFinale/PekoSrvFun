@@ -11,7 +11,6 @@ import org.bukkit.entity.*;
 public class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
     private double speed;
     private EntityInsentient entity;
-    private Location loc;
     private NavigationAbstract navigation;
     PathEntity destination;
 
@@ -53,7 +52,7 @@ public class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
                 zvalue = this.entity.getBukkitEntity().getLocation().getZ() - 5;
             }
 
-            this.loc = new Location( this.entity.getBukkitEntity().getWorld() ,xvalue, this.entity.getBukkitEntity().getLocation().getY() + 1, zvalue);
+            Location loc = new Location(this.entity.getBukkitEntity().getWorld(), xvalue, this.entity.getBukkitEntity().getLocation().getY() + 1, zvalue);
             destination = this.navigation.a(loc.getX(), loc.getY(), loc.getZ(), 3);
             return true;
         }

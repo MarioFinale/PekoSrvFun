@@ -4,10 +4,6 @@ import me.libraryaddict.disguise.disguisetypes.*;
 import me.libraryaddict.disguise.disguisetypes.watchers.*;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.economy.plugins.Economy_TAEcon;
-import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.world.entity.monster.EntityPigZombie;
-import net.minecraft.world.item.Items;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -46,7 +42,6 @@ public class PekoSrvFun_Listener implements Listener{
         }
         if (entity.getType() == EntityType.SLIME){
             SetSlimePekomon(entity);
-            return;
         }
     }
 
@@ -285,7 +280,7 @@ public class PekoSrvFun_Listener implements Listener{
 
 
     public void ClickedOnHorse(PlayerInteractEntityEvent event){
-        //not yet.
+        ///TODO: Horse mechanics.
     }
 
     /** @noinspection unused*/
@@ -529,8 +524,7 @@ public class PekoSrvFun_Listener implements Listener{
         if (!(container.has(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING))) return false;
         String pekomonTypeKey;
         pekomonTypeKey = container.get(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING);
-        if (pekomonTypeKey.isBlank()) return false;
-        return true;
+        return !pekomonTypeKey.isBlank();
     }
 
     boolean isHoloPet(Entity entity){
@@ -540,7 +534,6 @@ public class PekoSrvFun_Listener implements Listener{
         if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return false;
         String holoPetTypeKey;
         holoPetTypeKey = container.get(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING);
-        if (holoPetTypeKey.isBlank()) return false;
-        return true;
+        return !holoPetTypeKey.isBlank();
     }
 }
