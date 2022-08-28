@@ -70,7 +70,7 @@ public class PekoSrvFun_Commands implements CommandExecutor {
             }else if(netherite.getAmount() == 10){
                 inventory.setItem(NetheriteIndex, new ItemStack(Material.AIR, 1));
             }else{
-                return false;
+                if (EmeraldIndex <= -1) return false;
             }
         }
         ItemStack skull = inventory.getItem(SkullIndex);
@@ -90,7 +90,7 @@ public class PekoSrvFun_Commands implements CommandExecutor {
             }
         }
 
-        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(player.getLocation(), player.getName(), type);
+        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(player.getLocation(), player.getName(), type, "");
         SendMessageToPlayer(player,"Your " + pet.getPetName() + " HoloPet has been Invoked!" );
         player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1,1);
         return true;

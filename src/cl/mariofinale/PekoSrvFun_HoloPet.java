@@ -1,10 +1,14 @@
 package cl.mariofinale;
 
 import me.libraryaddict.disguise.DisguiseAPI;
-import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
-import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
+import me.libraryaddict.disguise.disguisetypes.*;
 
+import net.minecraft.core.IRegistry;
+import net.minecraft.resources.MinecraftKey;
 import net.minecraft.server.level.EntityPlayer;
+import net.minecraft.sounds.SoundEffect;
+import net.minecraft.sounds.SoundEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.goal.*;
@@ -15,12 +19,11 @@ import net.minecraft.world.entity.monster.*;
 import net.minecraft.world.entity.monster.hoglin.EntityHoglin;
 import net.minecraft.world.entity.player.EntityHuman;
 
+import net.minecraft.world.level.block.state.IBlockData;
 import net.minecraft.world.scores.ScoreboardTeam;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -36,16 +39,16 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.util.*;
 
-class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
+class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder {
     public Inventory inventory;
     private String Owner;
     private String petType;
     private String petName;
 
 
-    public PekoSrvFun_HoloPet(Location loc, String playerName, String pType){
-        super(EntityTypes.bm, ((CraftWorld) loc.getWorld()).getHandle());
-        double holoSpeed = 0.27D;
+    public PekoSrvFun_HoloPet(Location loc, String playerName, String pType, String customName){
+        super(EntityTypes.bj, ((CraftWorld) loc.getWorld()).getHandle());
+        double holoSpeed = 0.30D;
         this.g(loc.getX(), loc.getY(), loc.getZ());
         persist = true;
         petType = pType;
@@ -54,6 +57,7 @@ class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
         EntityInsentient nmsEntity = (EntityInsentient) ((this.getBukkitEntity()).getHandle());
         PathfinderGoalSelector goalSelector = nmsEntity.bT;
         PathfinderGoalSelector targetSelector = nmsEntity.bS;
+
 
         try {
             Field dField;
@@ -85,12 +89,12 @@ class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
         if (!(petName.equals("Suisei") || petName.equals("Rushia"))){
             this.bT.a(1, new PathfinderGoalWalkNearPlayer(this, 1.2D, Owner));
         }
-        this.bT.a(3, new PathfinderGoalMeleeAttackHolo(this, 1.0D, false, 3.2D));
+        this.bT.a(3, new PathfinderGoalMeleeAttackHolo(this, 1.2D, false, 3.2D));
 
         this.bT.a(4, new PathfinderGoalMoveTowardsRestriction(this, 1.0D));
-        this.bT.a(5, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 8.0F));
-        this.bT.a(6, new PathfinderGoalRandomLookaround(this));
-        this.bT.a(7, new PathfinderGoalRandomStroll(this, 0.7D));
+        this.bT.a(5, new PathfinderGoalLookAtPlayerHolo(this, EntityHuman.class, 8.0F));
+        this.bT.a(6, new PathfinderGoalRandomLookaroundHolo(this));
+        this.bT.a(7, new PathfinderGoalRandomStrollHolo(this, 0.7D));
 
         this.bS.a(0, new PathfinderTryPreventDeathByCreeper(this, 1.3D));
         this.bS.a(0, new PathfinderGoalHurtByTarget(this, EntityPlayer.class));
@@ -125,33 +129,52 @@ class PekoSrvFun_HoloPet extends EntityPigZombie implements InventoryHolder {
 
         ((CraftWorld) loc.getWorld()).addEntity(this, CreatureSpawnEvent.SpawnReason.CUSTOM);
 
-        this.getBukkitEntity().setCustomName(Owner + "'s " + petName +" clone");
-
         PersistentDataContainer container = this.getBukkitEntity().getPersistentDataContainer();
         container.set(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING, petName);
+        container.set(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING, Owner);
 
-        ((PigZombie) this.getBukkitEntity()).getEquipment().setItemInMainHand(new ItemStack(Material.AIR));
-        ((PigZombie) this.getBukkitEntity()).setCanPickupItems(true);
-        ((PigZombie) this.getBukkitEntity()).setVisualFire(false);
-        ((PigZombie) this.getBukkitEntity()).setPersistent(true);
-        ((PigZombie) this.getBukkitEntity()).setRemoveWhenFarAway(false);
-
+        ((Zombie) this.getBukkitEntity()).getEquipment().setItemInMainHand(new ItemStack(Material.AIR));
+        ((Zombie) this.getBukkitEntity()).setCanPickupItems(true);
+        ((Zombie) this.getBukkitEntity()).setPersistent(true);
+        ((Zombie) this.getBukkitEntity()).setRemoveWhenFarAway(false);
 
         PekoSrvFun.LogInfo("Entity ID: " + this.getBukkitEntity().getEntityId());
         PekoSrvFun.LogInfo("Location: " + this.getBukkitEntity().getLocation().toString());
         PlayerDisguise disguise = new PlayerDisguise(petType, petType);
-        disguise.setDisguiseName(Owner + "'s " + petName +" clone");
+        disguise.setReplaceSounds(true);
         FlagWatcher watcher = disguise.getWatcher();
-        watcher.setCustomName(Owner + "'s " + petName +" clone");
-        watcher.setCustomNameVisible(true);
+
+
+        if (customName.isBlank() || customName.isEmpty()){
+            this.getBukkitEntity().setCustomName(Owner + "'s " + petName +" clone");
+            watcher.setCustomName(Owner + "'s " + petName +" clone");
+            watcher.setCustomNameVisible(true);
+            disguise.setDynamicName(true);
+        }else {
+            this.getBukkitEntity().setCustomName(customName);
+            watcher.setCustomName(customName);
+            watcher.setCustomNameVisible(true);
+            disguise.setDynamicName(true);
+        }
+
         DisguiseAPI.disguiseToAll(this.getBukkitEntity(), disguise);
         this.inventory = Bukkit.createInventory(this, 9, this.petName + "'s Inventory | HP: 20/20" );
-
+        ((Zombie) this.getBukkitEntity()).setFireTicks(0);
     }
 
     @Override
     public @NotNull Inventory getInventory() {
         return inventory;
+    }
+
+    @Override
+    public SoundEffect t() {
+        Location loc = this.getBukkitEntity().getLocation();
+        BlockData data = loc.subtract(0,1,0).getBlock().getBlockData();
+        Sound step = data.getSoundGroup().getStepSound();
+        loc.getWorld().playSound(loc,step,0.2f,1);
+        SoundEffect soundEffect = SoundEffects.j;
+        return soundEffect;
     }
 
     public String getPetType(){

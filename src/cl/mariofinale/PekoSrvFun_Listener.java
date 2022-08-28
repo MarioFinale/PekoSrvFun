@@ -7,15 +7,14 @@ import net.minecraft.world.entity.monster.EntityPigZombie;
 import net.minecraft.world.item.Items;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -61,7 +60,7 @@ public class PekoSrvFun_Listener implements Listener{
         String ownerName = pet.getCustomName().split(" ")[0].split("'")[0];
         PersistentDataContainer container = pet.getPersistentDataContainer();
         Inventory newInvent = null;
-        PekoSrvFun_HoloPet newpet = new PekoSrvFun_HoloPet(event.getTo(), ownerName, holoPetData);
+        PekoSrvFun_HoloPet newpet = new PekoSrvFun_HoloPet(event.getTo(), ownerName, holoPetData, pet.getCustomName());
         pet.remove();
         if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
             String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
@@ -95,9 +94,21 @@ public class PekoSrvFun_Listener implements Listener{
     /** @noinspection unused*/
     @EventHandler
     public void onEntityCombustEvent(EntityCombustEvent event){
-        if (DisguiseAPI.isDisguised(event.getEntity())){
-            event.setCancelled(true);
-        }
+        if (event instanceof EntityCombustByBlockEvent || event instanceof EntityCombustByEntityEvent) return;
+        if (!DisguiseAPI.isDisguised(event.getEntity())) return;
+        if (!(event.getEntity().getLocation().getBlock().getLightFromSky() > 11)) return;
+        Block block = event.getEntity().getLocation().subtract(0,0,0).getBlock();
+        Block blockUnder = event.getEntity().getLocation().subtract(0,1,0).getBlock();
+        Material blockMaterial = block.getType();
+        Material blockUnderMaterial = blockUnder.getType();
+
+        if (blockMaterial == Material.FIRE) return;
+        if (blockMaterial == Material.SOUL_FIRE) return;
+        if (blockUnderMaterial == Material.LAVA) return;
+        if (blockMaterial == Material.LAVA) return;
+
+        event.setCancelled(true);
+
     }
 
     /** @noinspection unused*/
@@ -143,7 +154,7 @@ public class PekoSrvFun_Listener implements Listener{
         if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
             PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
             Inventory inventory = holoPet.inventory;
-            EntityEquipment equipment = ((PigZombie) holoPet.getBukkitEntity()).getEquipment();
+            EntityEquipment equipment = ((Zombie) holoPet.getBukkitEntity()).getEquipment();
             int totemIndex = -1;
             for (int i = 0; i < inventory.getSize(); i++) {
                 ItemStack item = inventory.getItem(i);
@@ -171,14 +182,29 @@ public class PekoSrvFun_Listener implements Listener{
 
     void RightClickedOnPet(Player player, Entity pet){
         if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
-            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-            double currentHealth = ((LivingEntity) holoPet.getBukkitEntity()).getHealth();
-            double maxHealth = ((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-            Inventory newInventory = Bukkit.createInventory(holoPet, 9, holoPet.getPetName() + "'s Inventory | HP: " + round(currentHealth) + "/" + round(maxHealth) );
-            newInventory.setContents(holoPet.inventory.getContents());
-            holoPet.inventory = newInventory;
-            player.openInventory(holoPet.inventory);
+            if (player.isSneaking()) return;
+            if (player.getEquipment() != null){
+                if (player.getEquipment().getItemInMainHand().getType() == Material.NAME_TAG){
+                    PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
+                    Disguise disguise = DisguiseAPI.getDisguise(holoPet.getBukkitEntity());
+                    disguise.setDynamicName(true);
+                }
+            }else {
+                PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
+                double currentHealth = ((LivingEntity) holoPet.getBukkitEntity()).getHealth();
+                double maxHealth = ((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+                Inventory newInventory = Bukkit.createInventory(holoPet, 9, holoPet.getPetName() + "'s Inventory | HP: " + round(currentHealth) + "/" + round(maxHealth) );
+                newInventory.setContents(holoPet.inventory.getContents());
+                holoPet.inventory = newInventory;
+                player.openInventory(holoPet.inventory);
+            }
+
         }
+    }
+
+
+    public void ClickedOnHorse(PlayerInteractEntityEvent event){
+        //not yet.
     }
 
     /** @noinspection unused*/
@@ -187,6 +213,7 @@ public class PekoSrvFun_Listener implements Listener{
         Player player = event.getPlayer();
         PlayerInventory inventory = player.getInventory();
         Entity entity = event.getRightClicked();
+        if (entity.getType() == EntityType.HORSE || entity.getType() == EntityType.SKELETON_HORSE || entity.getType() == EntityType.ZOMBIE_HORSE ) ClickedOnHorse(event);
         if (isHoloPet(entity)) RightClickedOnPet(player, entity);
         if (!isPekoMon(entity)) return;
 

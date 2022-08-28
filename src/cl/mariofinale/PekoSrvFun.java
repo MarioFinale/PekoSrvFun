@@ -62,6 +62,7 @@ public class PekoSrvFun extends JavaPlugin {
     static ItemStack PekomonWinkSkullF;
     static ItemStack FlippedPekomonWinkSkullF;
     static NamespacedKey holoPetTypeKey;
+    static NamespacedKey holoPetOwnerKey;
     static NamespacedKey holoPetInventoryKey;
     static NamespacedKey pekomonTypeKey;
     static NamespacedKey pekomonLastBreedKey;
@@ -87,6 +88,7 @@ public class PekoSrvFun extends JavaPlugin {
         pekomonTypeKey = new NamespacedKey(this, "PekoMonType");
         pekomonLastBreedKey = new NamespacedKey(this, "PekoMonLastBreed");
         holoPetTypeKey = new NamespacedKey(this, "holoPetTypeKey");
+        holoPetOwnerKey = new NamespacedKey(this, "holoPetOwnerKey");
         holoPetInventoryKey = new NamespacedKey(this, "holoPetInventoryKey");
         LogInfo("Namespaced Keys created.");
         LogInfo("Creating slow refreshing task...");
@@ -313,11 +315,12 @@ public class PekoSrvFun extends JavaPlugin {
                 String holoPetData = getHoloPetData(entity);
                 if (holoPetData.isBlank()) continue;
                 if (!DisguiseAPI.isDisguised(entity)){
-                    String ownerName = entity.getCustomName().split(" ")[0].split("'")[0];
+                    String ownerName = getHoloPetOwner(entity);
+                    if (ownerName.isBlank()) continue;
                     PersistentDataContainer container = entity.getPersistentDataContainer();
                     Inventory newInvent = null;
+                    PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName());
                     entity.remove();
-                    PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
                     if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
                         String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
                         try {
@@ -335,17 +338,17 @@ public class PekoSrvFun extends JavaPlugin {
                     }
                 }
 
-                PigZombie pigZombie = (PigZombie) entity;
-                EntityEquipment equipment = pigZombie.getEquipment();
+                Zombie zombie = (Zombie) entity;
+                EntityEquipment equipment = zombie.getEquipment();
                 if (equipment == null) return;
                 if(equipment.getChestplate().getType() == Material.ELYTRA){
                     if(!entity.isInWater()){
                         if (entity.getFallDistance() > 0.2D){
-                            ((PigZombie) entity).setGliding(true);
+                            ((Zombie) entity).setGliding(true);
                         }
                     }
                 }else{
-                    ((PigZombie) entity).setGliding(false);
+                    ((Zombie) entity).setGliding(false);
                 }
             }
         }
@@ -358,9 +361,10 @@ public class PekoSrvFun extends JavaPlugin {
                 if (!holoPetData.isBlank()){
                     if (DisguiseAPI.isDisguised(entity)){
                         if (!(((CraftEntity)entity).getHandle() instanceof PekoSrvFun_HoloPet)){
-                            String ownerName = entity.getCustomName().split(" ")[0];
+                            String ownerName = getHoloPetOwner(entity);
+                            if (ownerName.isBlank()) continue;
+                            PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName());
                             entity.remove();
-                            PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
                         }else {
                             if (((LivingEntity) entity).getHealth() <= 0){
                                 entity.remove();
@@ -391,16 +395,16 @@ public class PekoSrvFun extends JavaPlugin {
                                     }else {
                                         inventory.setItem(carrotIndex, new ItemStack(Material.AIR,1 ));
                                     }
-                                    entity.getWorld().playSound(entity, Sound.ENTITY_GENERIC_EAT,1,1);
-                                    entity.getWorld().playSound(entity, Sound.ENTITY_GENERIC_EAT,1,1);
+                                    entity.getWorld().playSound(entity, Sound.ENTITY_GENERIC_EAT,0.3f,1);
+                                    entity.getWorld().playSound(entity, Sound.ENTITY_GENERIC_EAT,0.3f,1);
                                     entity.getWorld().spawnParticle(Particle.ITEM_CRACK, entity.getLocation(), 25, 0.1,1,0.1,0,carrots);
                                     entity.getWorld().spawnParticle(Particle.ITEM_CRACK, entity.getLocation(), 25, 0.5,1,0.5,0,carrots);
                                     double newHealth = ((LivingEntity) entity).getHealth() + 1;
                                     double maxHealth = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
                                     if (newHealth >= maxHealth){
-                                        ((PigZombie) holoPet.getBukkitEntity()).setHealth(maxHealth);
+                                        ((Zombie) holoPet.getBukkitEntity()).setHealth(maxHealth);
                                     }else{
-                                        ((PigZombie) holoPet.getBukkitEntity()).setHealth(newHealth);
+                                        ((Zombie) holoPet.getBukkitEntity()).setHealth(newHealth);
                                     }
                                 }
                             }
@@ -408,11 +412,12 @@ public class PekoSrvFun extends JavaPlugin {
                             String ownerName = entity.getCustomName().split(" ")[0].split("'")[0];
                         }
                     }else {
-                        String ownerName = entity.getCustomName().split(" ")[0].split("'")[0];
+                        String ownerName = getHoloPetOwner(entity);
+                        if (ownerName.isBlank()) continue;
                         PersistentDataContainer container = entity.getPersistentDataContainer();
                         Inventory newInvent = null;
+                        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName());
                         entity.remove();
-                        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData);
                         if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
                             String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
                             try {
@@ -430,7 +435,7 @@ public class PekoSrvFun extends JavaPlugin {
                         }
                     }
                 }else{
-                    if (entity.getType().equals(EntityType.ZOMBIFIED_PIGLIN)) {
+                    if ((entity.getType() == EntityType.ZOMBIFIED_PIGLIN || entity.getType() == EntityType.ZOMBIE )) {
                         String entityName = entity.getCustomName();
                         if (entityName != null){
                             if (entityName.contains("clone")) {
@@ -447,9 +452,9 @@ public class PekoSrvFun extends JavaPlugin {
 
     public ItemStack SetSkull(String textureID, String name) {
         ItemStack skull = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
-        ;
         SkullMeta meta = (SkullMeta) skull.getItemMeta();
         OfflinePlayer offlinePlayer2 = Bukkit.getOfflinePlayer("dummy_pekomon");
+        assert meta != null;
         meta.setOwningPlayer(offlinePlayer2);
         skull.setItemMeta(meta);
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
@@ -481,7 +486,7 @@ public class PekoSrvFun extends JavaPlugin {
     }
 
     static String getHoloPetData(Entity entity) {
-        if (!(entity.getType() == EntityType.ZOMBIFIED_PIGLIN)) return "";
+        if (!(entity.getType() == EntityType.ZOMBIFIED_PIGLIN || entity.getType() == EntityType.ZOMBIE )) return "";
         PersistentDataContainer container = entity.getPersistentDataContainer();
         if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return "";
         String petTypeKey;
@@ -490,4 +495,18 @@ public class PekoSrvFun extends JavaPlugin {
         return petTypeKey;
     }
 
+    static String getHoloPetOwner(Entity entity) {
+        if (!(entity.getType() == EntityType.ZOMBIFIED_PIGLIN || entity.getType() == EntityType.ZOMBIE )) return "";
+        PersistentDataContainer container = entity.getPersistentDataContainer();
+        if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return "";
+        if ((container.has(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING))){
+            String owner = container.get(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING);
+            if (!owner.isBlank()) return owner;
+        }else {
+            if (entity.getCustomName().matches(".+?'s [A-Z].+? clone")){
+                return entity.getCustomName().split(" ")[0].split("'")[0];
+            }
+        }
+        return "";
+    }
 }

@@ -2,8 +2,7 @@ package cl.mariofinale;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.PigZombie;
+import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -16,6 +15,7 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Base64;
 
 public class Utils {
@@ -362,8 +362,8 @@ public class Utils {
     public static void setPetInventory(InventoryHolder ent){
         PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ent;
         Inventory inventory = holoPet.inventory;
-        PigZombie pigZombie = (PigZombie) holoPet.getBukkitEntity();
-        EntityEquipment equipment = pigZombie.getEquipment();
+        Zombie zombie = (Zombie) holoPet.getBukkitEntity();
+        EntityEquipment equipment = zombie.getEquipment();
         ItemStack helmet = equipment.getHelmet();
         ItemStack chestPlate = equipment.getChestplate();
         ItemStack leggings = equipment.getLeggings();
@@ -731,6 +731,23 @@ public class Utils {
         PersistentDataContainer container =  holoPet.getBukkitEntity().getPersistentDataContainer();
         container.set(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING, Utils.toBase64(inventory));
 
+    }
+
+    public static Object getPrivateField(String fieldName, Class clazz, Object object)
+    {
+        Field field;
+        Object o = null;
+        try
+        {
+            field = clazz.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            o = field.get(object);
+        }
+        catch(NoSuchFieldException | IllegalAccessException e)
+        {
+            e.printStackTrace();
+        }
+        return o;
     }
 
 }
