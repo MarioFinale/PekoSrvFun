@@ -28,6 +28,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R1.event.CraftEventFactory;
 import org.bukkit.craftbukkit.v1_19_R1.inventory.CraftItemStack;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -37,24 +38,28 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
 
 class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRangedEntity {
     public Inventory inventory;
-    public boolean Sitting;
+    public String Status;
     private String Owner;
     private String petType;
     private String petName;
 
-    public PekoSrvFun_HoloPet(Location loc, String playerName, String pType, String customName){
+    public PekoSrvFun_HoloPet(Location loc, String playerName, String pType, String customName, @Nullable PersistentDataContainer dataContainer){
         super(EntityTypes.bj, ((CraftWorld) loc.getWorld()).getHandle());
         double holoSpeed = 0.30D;
         this.g(loc.getX(), loc.getY(), loc.getZ());
-        persist = true;
-        petType = pType;
+        this.persist = true;
+        this.petType = pType;
         this.Owner = playerName;
+        this.Status = "Normal";
+
 
         EntityInsentient nmsEntity = (EntityInsentient) ((this.getBukkitEntity()).getHandle());
         PathfinderGoalSelector goalSelector = nmsEntity.bT;
@@ -122,6 +127,7 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
         this.bS.a(10, new PathfinderGoalNearestAttackableTarget<>(this, EntityRavager.class, true));
         this.bS.a(15, new PathfinderGoalNearestAttackableTarget<>(this, EntityWither.class, true));
         this.bS.a(15, new PathfinderGoalNearestAttackableTarget<>(this, EntitySilverfish.class, true));
+
         if (petName.equals("Suisei") || petName.equals("Rushia")){
             this.bS.a(16, new PathfinderGoalNearestAttackableTarget<>(this, EntityPlayer.class, true));
         }
@@ -132,10 +138,6 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
 
         ((CraftWorld) loc.getWorld()).addEntity(this, CreatureSpawnEvent.SpawnReason.CUSTOM);
 
-        PersistentDataContainer container = this.getBukkitEntity().getPersistentDataContainer();
-        container.set(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING, petName);
-        container.set(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING, Owner);
-
         ((Zombie) this.getBukkitEntity()).getEquipment().setItemInMainHand(new ItemStack(Material.AIR));
         ((Zombie) this.getBukkitEntity()).setCanPickupItems(true);
         ((Zombie) this.getBukkitEntity()).setPersistent(true);
@@ -145,6 +147,50 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
             ((Zombie) this.getBukkitEntity()).setCanBreakDoors(true);
         }else {
             ((Zombie) this.getBukkitEntity()).setCanBreakDoors(false);
+        }
+
+
+        if (dataContainer == null){
+            PersistentDataContainer container = this.getBukkitEntity().getPersistentDataContainer();
+            container.set(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING, petName);
+            container.set(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING, Owner);
+            container.set(PekoSrvFun.holoPetStatusKey, PersistentDataType.STRING, Status);
+            this.inventory = Bukkit.createInventory(this, 9, this.petName + "'s Inventory | HP: 20/20" );
+            container.set(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING, Utils.toBase64(this.inventory));
+
+        }else {
+            PersistentDataContainer container = this.getBukkitEntity().getPersistentDataContainer();
+            if (dataContainer.has(PekoSrvFun.holoPetStatusKey, PersistentDataType.STRING)){
+                String lastStatus = dataContainer.get(PekoSrvFun.holoPetStatusKey, PersistentDataType.STRING) ;
+                container.set(PekoSrvFun.holoPetStatusKey, PersistentDataType.STRING, lastStatus);
+                this.Status = lastStatus;
+            }else{
+                container.set(PekoSrvFun.holoPetStatusKey, PersistentDataType.STRING, "Normal");
+            }
+
+
+            container.set(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING, petName);
+            container.set(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING, Owner);
+            if (dataContainer.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
+                Inventory newInvent = null;
+                String encodedInv = dataContainer.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
+                try {
+                    newInvent = Utils.fromBase64(encodedInv);
+                } catch (IOException e) {
+                    PekoSrvFun.LogError("Error loading pet inventory.");
+                    PekoSrvFun.LogError(e.getMessage());
+                }
+                if (newInvent != null){
+                    this.inventory = newInvent;
+                }
+                if (this.inventory != null){
+                    Utils.setPetInventory(this);
+                }
+                container.set(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING, encodedInv);
+            }else {
+                this.inventory = Bukkit.createInventory(this, 9, this.petName + "'s Inventory | HP: 20/20" );
+                container.set(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING, Utils.toBase64(this.inventory));
+            }
         }
 
         PekoSrvFun.LogInfo("Entity ID: " + this.getBukkitEntity().getEntityId());
@@ -166,8 +212,13 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
         }
 
         DisguiseAPI.disguiseToAll(this.getBukkitEntity(), disguise);
-        this.inventory = Bukkit.createInventory(this, 9, this.petName + "'s Inventory | HP: 20/20" );
-        ((Zombie) this.getBukkitEntity()).setFireTicks(0);
+
+        if (this.Status.equals("Sitting")){
+            DisguiseAPI.getDisguise(this.getBukkitEntity()).getWatcher().setSneaking(true);
+        }else {
+            DisguiseAPI.getDisguise(this.getBukkitEntity()).getWatcher().setSneaking(false);
+        }
+
     }
 
     @Override
@@ -186,6 +237,16 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
 
     public String getPetType(){
         return petType;
+    }
+
+    public String getStatus(){
+        return Status;
+    }
+
+    public void setStatus(String status){
+        Status = status;
+        PersistentDataContainer container = this.getBukkitEntity().getPersistentDataContainer();
+        container.set(PekoSrvFun.holoPetStatusKey, PersistentDataType.STRING, Status);
     }
 
     public String getPetName(){
@@ -214,18 +275,29 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
                 }
             }
             ItemStack arrows = inventory.getItem(arrowIndex);
+
             if (arrows.getAmount() > 1){
-                arrows.setAmount(arrows.getAmount() - 1);
+                if (!((Zombie)this.getBukkitEntity()).getEquipment().getItemInMainHand().containsEnchantment(Enchantment.ARROW_INFINITE)){
+                    arrows.setAmount(arrows.getAmount() - 1);
+                }
             }else if(arrows.getAmount() == 1){
-                inventory.setItem(arrowIndex, new ItemStack(Material.AIR, 1));
+                if (!((Zombie)this.getBukkitEntity()).getEquipment().getItemInMainHand().containsEnchantment(Enchantment.ARROW_INFINITE)){
+                    inventory.setItem(arrowIndex, new ItemStack(Material.AIR, 1));
+                }
             }
+            if (!this.inventory.contains(Material.ARROW)){
+                Utils.setPetInventory(this);
+            }
+
             EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(this, this.ez(), CraftItemStack.asNMSCopy(arrows), entityarrow, EnumHand.a, 0.8F, true);
             if (event.isCancelled()) {
                 event.getProjectile().remove();
             } else {
                 if (event.getProjectile() == entityarrow.getBukkitEntity()) {
                     this.s.b(entityarrow);
-                    ((Arrow)(entityarrow.getBukkitEntity())).setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
+                    if (!((Zombie)this.getBukkitEntity()).getEquipment().getItemInMainHand().containsEnchantment(Enchantment.ARROW_INFINITE)){
+                        ((Arrow)(entityarrow.getBukkitEntity())).setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
+                    }
                 }
                 this.a(SoundEffects.sT, 1.0F, 1.0F / (this.dQ().i() * 0.4F + 0.8F));
             }

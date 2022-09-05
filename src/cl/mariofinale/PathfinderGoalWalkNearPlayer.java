@@ -37,7 +37,7 @@ public class PathfinderGoalWalkNearPlayer extends PathfinderGoal
 
     public boolean a()
     {
-        if (((PekoSrvFun_HoloPet) this.entity).Sitting) return false;
+        if (((PekoSrvFun_HoloPet) this.entity).getStatus().equals("Sitting")) return false;
         Player tPlayer = Bukkit.getPlayer(player);
         if (tPlayer == null) return false;
         if (!tPlayer.isOnline()) return false;

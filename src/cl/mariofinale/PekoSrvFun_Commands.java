@@ -91,7 +91,7 @@ public class PekoSrvFun_Commands implements CommandExecutor {
             }
         }
 
-        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(player.getLocation(), player.getName(), type, "");
+        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(player.getLocation(), player.getName(), type, "", null);
         SendMessageToPlayer(player,"Your " + pet.getPetName() + " HoloPet has been Invoked!" );
         player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1,1);
         return true;
@@ -134,7 +134,7 @@ public class PekoSrvFun_Commands implements CommandExecutor {
     }
 
 
-    private static void SendMessageToPlayer(Player player, String message) {
+    public static void SendMessageToPlayer(Player player, String message) {
         if (!player.isValid()) return;
         if (player.isBanned()) return;
         if (!player.isOnline()) return;

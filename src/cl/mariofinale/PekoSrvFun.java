@@ -60,6 +60,7 @@ public class PekoSrvFun extends JavaPlugin {
     static ItemStack PekomonWinkSkullF;
     static ItemStack FlippedPekomonWinkSkullF;
     static NamespacedKey holoPetTypeKey;
+    static NamespacedKey holoPetStatusKey;
     static NamespacedKey holoPetOwnerKey;
     static NamespacedKey holoPetInventoryKey;
     static NamespacedKey pekomonTypeKey;
@@ -88,6 +89,7 @@ public class PekoSrvFun extends JavaPlugin {
         holoPetTypeKey = new NamespacedKey(this, "holoPetTypeKey");
         holoPetOwnerKey = new NamespacedKey(this, "holoPetOwnerKey");
         holoPetInventoryKey = new NamespacedKey(this, "holoPetInventoryKey");
+        holoPetStatusKey = new NamespacedKey(this, "holoPetStatusKey");
         LogInfo("Namespaced Keys created.");
         LogInfo("Creating slow refreshing task...");
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
@@ -311,23 +313,8 @@ public class PekoSrvFun extends JavaPlugin {
                     if (ownerName.isBlank()) continue;
                     PersistentDataContainer container = entity.getPersistentDataContainer();
                     Inventory newInvent = null;
-                    PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName());
+                    PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName(), container);
                     entity.remove();
-                    if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
-                        String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
-                        try {
-                            newInvent = Utils.fromBase64(encodedInv);
-                        } catch (IOException e) {
-                            LogError("Error loading pet inventory.");
-                            LogError(e.getMessage());
-                        }
-                        if (newInvent != null){
-                            pet.inventory = newInvent;
-                        }
-                        if (pet.inventory != null){
-                            Utils.setPetInventory(pet);
-                        }
-                    }
                 }
 
                 Zombie zombie = (Zombie) entity;
@@ -355,7 +342,8 @@ public class PekoSrvFun extends JavaPlugin {
                         if (!(((CraftEntity)entity).getHandle() instanceof PekoSrvFun_HoloPet)){
                             String ownerName = getHoloPetOwner(entity);
                             if (ownerName.isBlank()) continue;
-                            PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName());
+                            PersistentDataContainer container = entity.getPersistentDataContainer();
+                            PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName(), container);
                             entity.remove();
                         }else {
                             if (((LivingEntity) entity).getHealth() <= 0){
@@ -403,24 +391,8 @@ public class PekoSrvFun extends JavaPlugin {
                         String ownerName = getHoloPetOwner(entity);
                         if (ownerName.isBlank()) continue;
                         PersistentDataContainer container = entity.getPersistentDataContainer();
-                        Inventory newInvent = null;
-                        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName());
+                        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName(), container);
                         entity.remove();
-                        if (container.has(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING)){
-                            String encodedInv = container.get(PekoSrvFun.holoPetInventoryKey, PersistentDataType.STRING) ;
-                            try {
-                                newInvent = Utils.fromBase64(encodedInv);
-                            } catch (IOException e) {
-                                LogError("Error loading pet inventory.");
-                                LogError(e.getMessage());
-                            }
-                            if (newInvent != null){
-                                pet.inventory = newInvent;
-                            }
-                            if (pet.inventory != null){
-                                Utils.setPetInventory(pet);
-                            }
-                        }
                     }
                 }else{
                     if ((entity.getType() == EntityType.ZOMBIFIED_PIGLIN || entity.getType() == EntityType.ZOMBIE )) {

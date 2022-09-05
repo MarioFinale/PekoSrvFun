@@ -20,7 +20,7 @@ public class PathfinderGoalRandomLookaroundHolo extends PathfinderGoal {
     }
 
     public boolean a() {
-        if (((PekoSrvFun_HoloPet) this.entity).Sitting) return false;
+        if (((PekoSrvFun_HoloPet) this.entity).getStatus().equals("Sitting")) return false;
         Disguise disguise = DisguiseAPI.getDisguise(entity.getBukkitEntity());
         FlagWatcher watcher = disguise.getWatcher();
         if (watcher.isSleeping()) return false;
