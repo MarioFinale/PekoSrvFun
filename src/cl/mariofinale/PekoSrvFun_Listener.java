@@ -81,7 +81,7 @@ public class PekoSrvFun_Listener implements Listener{
             event.setCancelled(true);
             return;
         }
-        if (isHoloPet(entity) && event.getEntityType().equals(EntityType.IRON_GOLEM)){
+        if (isHoloPet(target) && entity.getType().equals(EntityType.IRON_GOLEM)){
             event.setCancelled(true);
         }
 
@@ -212,7 +212,10 @@ public class PekoSrvFun_Listener implements Listener{
     void RightClickedOnPet(Player player, Entity pet){
         if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
             PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-            if (!player.getName().equals(holoPet.getOwner())) return;
+            if (!player.getName().equals(holoPet.getOwner())){
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(holoPet.getPetName() + " pet owned by " + holoPet.getOwner()));
+                return;
+            }
 
             if (player.getEquipment() != null ){
                 if (player.getEquipment().getItemInMainHand().getType() == Material.NAME_TAG){
@@ -274,8 +277,6 @@ public class PekoSrvFun_Listener implements Listener{
                 }
             }
         }
-
-
     }
 
 
@@ -441,7 +442,7 @@ public class PekoSrvFun_Listener implements Listener{
              if (isHoloPet(entity)){
                  Location location = entity.getLocation();
                  PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
-                 String locationString = "X" + location.getBlockX() + " Y" + location.getBlockX() + " Z" + location.getBlockZ();
+                 String locationString = "X" + location.getBlockX() + " Y" + location.getBlockY() + " Z" + location.getBlockZ();
                  PekoSrvFun.LogWarn(pet.getPetName() + " pet stored in unloaded chunk!: " + locationString + " Owner: " + pet.getOwner());
                  String ownerName = pet.getOwner();
                  Player player = Bukkit.getPlayer(ownerName);
