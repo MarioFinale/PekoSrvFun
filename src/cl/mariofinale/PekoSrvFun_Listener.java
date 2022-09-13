@@ -53,7 +53,6 @@ class PekoSrvFun_Listener implements Listener{
         if (!pet.isValid())return;
         if (!isHoloPet(event.getEntity())) return;
         if (DisguiseAPI.isDisguised(pet)) return;
-
         String holoPetData = PekoSrvFun.getHoloPetData(pet);
         String ownerName = pet.getCustomName().split(" ")[0].split("'")[0];
         PersistentDataContainer container = pet.getPersistentDataContainer();
@@ -81,6 +80,14 @@ class PekoSrvFun_Listener implements Listener{
         }
         if (isHoloPet(target) && entity.getType().equals(EntityType.IRON_GOLEM)){
             event.setCancelled(true);
+        }
+
+        if (isHoloPet(entity)){
+            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
+            if (holoPet.getStatus().equals("Sitting")){
+                event.setCancelled(true);
+                return;
+            }
         }
 
     }
@@ -439,8 +446,17 @@ class PekoSrvFun_Listener implements Listener{
          Entity[] entities = event.getChunk().getEntities();
          for (Entity entity: entities){
              if (isHoloPet(entity)){
-                 Location location = entity.getLocation();
-                 PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
+                 Entity entity1 = entity;
+                 if(!(((CraftEntity)entity).getHandle() instanceof PekoSrvFun_HoloPet)){
+                     PersistentDataContainer container = entity.getPersistentDataContainer();
+                     String holoPetTypeKey = container.get(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING);
+                     String holoPetOwnerKey = container.get(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING);
+                     PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), holoPetOwnerKey, holoPetTypeKey, entity.getCustomName(), entity.getPersistentDataContainer());
+                     entity.remove();
+                     entity1 = pet.getBukkitEntity();
+                 }
+                 Location location = entity1.getLocation();
+                 PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet) ((CraftEntity)entity1).getHandle();
                  String locationString = "X" + location.getBlockX() + " Y" + location.getBlockY() + " Z" + location.getBlockZ();
                  PekoSrvFun.LogWarn(pet.getPetName() + " pet stored in unloaded chunk!: " + locationString + " Owner: " + pet.getOwner());
                  String ownerName = pet.getOwner();
@@ -528,8 +544,11 @@ class PekoSrvFun_Listener implements Listener{
     }
 
     private boolean isHoloPet(Entity entity){
+        if (entity == null) return  false;
+        if (!entity.isValid()) return  false;
         PersistentDataContainer container = entity.getPersistentDataContainer();
         if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return false;
+        if (!(container.has(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING))) return false;
         String holoPetTypeKey;
         holoPetTypeKey = container.get(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING);
         return !holoPetTypeKey.isBlank();
