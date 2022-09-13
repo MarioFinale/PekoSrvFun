@@ -3,7 +3,6 @@ package cl.mariofinale;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.*;
 
-import net.minecraft.network.syncher.DataWatcherObject;
 import net.minecraft.server.level.EntityPlayer;
 import net.minecraft.sounds.SoundEffect;
 import net.minecraft.sounds.SoundEffects;
@@ -46,10 +45,10 @@ import java.util.*;
 
 class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRangedEntity {
     public Inventory inventory;
-    public String Status;
-    private String Owner;
+    private String Status;
+    private final String Owner;
     private String petType;
-    private String petName;
+    private final String petName;
 
     public PekoSrvFun_HoloPet(Location loc, String playerName, String pType, String customName, @Nullable PersistentDataContainer dataContainer){
         super(EntityTypes.bj, ((CraftWorld) loc.getWorld()).getHandle());
@@ -97,9 +96,10 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
             this.bT.a(1, new PathfinderGoalWalkNearPlayer(this, 1.2D, Owner));
         }
 
-        this.bT.a(2, new PathfinderGoalBowShoot<>(this, 1.0D, 20, 15.0F));
+        this.bT.a(2, new PathfinderGoalBowShoot<>(this, 1.0D, 20, 30.0F));
         this.bT.a(3, new PathfinderGoalMeleeAttackHolo(this, 1.2D, false, 3.2D));
 
+        //this.bT.a(4, new PathfinderGoalTryMineOres(this, 0.9D, 10)); WIP
         this.bT.a(4, new PathfinderGoalMoveTowardsRestriction(this, 1.0D));
         this.bT.a(5, new PathfinderGoalLookAtPlayerHolo(this, EntityHuman.class, 8.0F));
         this.bT.a(6, new PathfinderGoalRandomLookaroundHolo(this));

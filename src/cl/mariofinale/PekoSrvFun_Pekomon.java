@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public class PekoSrvFun_Pekomon extends EntitySlime {
+class PekoSrvFun_Pekomon extends EntitySlime {
     public PekoSrvFun_Pekomon(Location loc, String type){
         super(EntityTypes.aG, ((CraftWorld) loc.getWorld()).getHandle());
         this.g(loc.getX(), loc.getY(), loc.getZ());

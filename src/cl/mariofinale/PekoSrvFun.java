@@ -22,12 +22,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -356,6 +352,8 @@ public class PekoSrvFun extends JavaPlugin {
                             if (entity.isInvulnerable()){
                                 entity.setInvulnerable(false);
                             }
+
+                            Objects.requireNonNull(((LivingEntity)entity).getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(20); //Let's force set max health to 20. For some reason the Max health attribute changes to absurd levels sometimes
 
                             if (((LivingEntity)entity).getHealth() < ((LivingEntity)entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() ){
                                 PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();

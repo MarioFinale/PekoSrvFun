@@ -1,7 +1,6 @@
 package cl.mariofinale;
 import me.libraryaddict.disguise.*;
 import me.libraryaddict.disguise.disguisetypes.*;
-import me.libraryaddict.disguise.disguisetypes.watchers.*;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
@@ -25,12 +24,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.io.IOException;
 import java.util.*;
 
 import static java.lang.Math.round;
 
-public class PekoSrvFun_Listener implements Listener{
+class PekoSrvFun_Listener implements Listener{
 
 
     /** @noinspection unused*/
@@ -209,7 +207,7 @@ public class PekoSrvFun_Listener implements Listener{
         if( ent.getClass() == PekoSrvFun_HoloPet.class) Utils.setPetInventory(ent);
     }
 
-    void RightClickedOnPet(Player player, Entity pet){
+    private void RightClickedOnPet(Player player, Entity pet){
         if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
             PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
             if (!player.getName().equals(holoPet.getOwner())){
@@ -243,7 +241,8 @@ public class PekoSrvFun_Listener implements Listener{
             }
 
             double currentHealth = ((LivingEntity) holoPet.getBukkitEntity()).getHealth();
-            double maxHealth = ((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+            double maxHealth = 20; //Let's force max health to 20. For some reason the Max health attribute changes to absurd levels sometimes
+            Objects.requireNonNull(((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(20); //Force set base health to 20
             Inventory newInventory = Bukkit.createInventory(holoPet, 9, holoPet.getPetName() + "'s Inventory | HP: " + round(currentHealth) + "/" + round(maxHealth) );
             newInventory.setContents(holoPet.inventory.getContents());
             holoPet.inventory = newInventory;
@@ -280,7 +279,7 @@ public class PekoSrvFun_Listener implements Listener{
     }
 
 
-    public void ClickedOnHorse(PlayerInteractEntityEvent event){
+    private void ClickedOnHorse(PlayerInteractEntityEvent event){
         ///TODO: Horse mechanics.
     }
 
@@ -343,7 +342,7 @@ public class PekoSrvFun_Listener implements Listener{
         }
     }
 
-    void HoloPetDeathEvent(EntityDeathEvent event){
+    private void HoloPetDeathEvent(EntityDeathEvent event){
         Entity pet = event.getEntity();
         if(!(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet)) return;
         PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
@@ -418,6 +417,7 @@ public class PekoSrvFun_Listener implements Listener{
                 newSkull.setAmount(1);
                 event.getDrops().clear();
                 event.getDrops().add(new ItemStack(Material.SLIME_BALL, 1));
+                event.getDrops().add(newSkull);
                 Random prob = new Random();
                 int tp = prob.nextInt(100);
                 if (tp <= 5){
@@ -427,7 +427,6 @@ public class PekoSrvFun_Listener implements Listener{
                 if (tp <= 1){
                     event.getDrops().add(new ItemStack(Material.CARROT, 1));
                 }
-                event.getDrops().add(newSkull);
                 entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_RABBIT_DEATH, SoundCategory.NEUTRAL,2,1 );
             }
         }
@@ -455,7 +454,7 @@ public class PekoSrvFun_Listener implements Listener{
     }
 
 
-    public static void SetSlimePekomon(Entity entity){
+    private static void SetSlimePekomon(Entity entity){
         Slime slime = (Slime) entity;
         if (slime.getSize() == 1){
             Random prob = new Random();
@@ -466,7 +465,7 @@ public class PekoSrvFun_Listener implements Listener{
         }
     }
 
-    public static void SetPekomon(Slime slime){
+    private static void SetPekomon(Slime slime){
         Location location = slime.getLocation();
         slime.remove();
         Random r = new Random();
@@ -516,7 +515,7 @@ public class PekoSrvFun_Listener implements Listener{
 
 
 
-    boolean isPekoMon(Entity entity){
+    private boolean isPekoMon(Entity entity){
         if (!(entity.getType() == EntityType.SLIME)) return false;
         if (!(DisguiseAPI.isDisguised(entity))) return false;
         FlagWatcher watcher = DisguiseAPI.getDisguise(entity).getWatcher();
@@ -528,16 +527,12 @@ public class PekoSrvFun_Listener implements Listener{
         return !pekomonTypeKey.isBlank();
     }
 
-    boolean isHoloPet(Entity entity){
-        if (!(DisguiseAPI.isDisguised(entity))) return false;
+    private boolean isHoloPet(Entity entity){
         PersistentDataContainer container = entity.getPersistentDataContainer();
         if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return false;
         String holoPetTypeKey;
         holoPetTypeKey = container.get(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING);
         return !holoPetTypeKey.isBlank();
     }
-
-
-
 
 }

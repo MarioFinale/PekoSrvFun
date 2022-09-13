@@ -8,11 +8,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.*;
 
 
-public class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
-    private double speed;
-    private EntityInsentient entity;
-    private NavigationAbstract navigation;
-    PathEntity destination;
+class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
+    private final double speed;
+    private final EntityInsentient entity;
+    private final NavigationAbstract navigation;
+    private PathEntity destination;
 
     public PathfinderTryPreventDeathByCreeper(EntityInsentient entity, double speedMultiplier)
     {

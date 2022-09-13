@@ -18,7 +18,7 @@ import org.bukkit.entity.Player;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class PathfinderGoalWalkNearPlayer extends PathfinderGoal
+class PathfinderGoalWalkNearPlayer extends PathfinderGoal
 {
     private final double speed;
     private final EntityInsentient entity;

@@ -15,7 +15,7 @@ import net.minecraft.world.entity.ai.targeting.PathfinderTargetCondition;
 import net.minecraft.world.entity.player.EntityHuman;
 import org.jetbrains.annotations.Nullable;
 
-public class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
+class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
     public static final float a = 0.02F;
     protected final EntityInsentient entity;
     @Nullable

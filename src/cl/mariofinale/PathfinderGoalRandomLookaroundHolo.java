@@ -8,7 +8,7 @@ import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.ai.goal.PathfinderGoal;
 
-public class PathfinderGoalRandomLookaroundHolo extends PathfinderGoal {
+class PathfinderGoalRandomLookaroundHolo extends PathfinderGoal {
     private final EntityInsentient entity;
     private double b;
     private double c;

@@ -11,26 +11,26 @@ import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.phys.Vec3D;
 import org.jetbrains.annotations.Nullable;
 
-public class PathfinderGoalRandomStrollHolo extends PathfinderGoal {
+class PathfinderGoalRandomStrollHolo extends PathfinderGoal {
     public static final int a = 120;
-    protected final EntityCreature entity;
-    protected double c;
-    protected double d;
-    protected double e;
-    protected final double f;
-    protected int g;
-    protected boolean h;
+    private final EntityCreature entity;
+    private double c;
+    private double d;
+    private double e;
+    private final double f;
+    private int g;
+    private boolean h;
     private final boolean i;
 
     public PathfinderGoalRandomStrollHolo(EntityCreature var0, double var1) {
         this(var0, var1, 120);
     }
 
-    public PathfinderGoalRandomStrollHolo(EntityCreature var0, double var1, int var3) {
+    private PathfinderGoalRandomStrollHolo(EntityCreature var0, double var1, int var3) {
         this(var0, var1, var3, true);
     }
 
-    public PathfinderGoalRandomStrollHolo(EntityCreature var0, double var1, int var3, boolean var4) {
+    private PathfinderGoalRandomStrollHolo(EntityCreature var0, double var1, int var3, boolean var4) {
         this.entity = var0;
         this.f = var1;
         this.g = var3;
@@ -70,7 +70,7 @@ public class PathfinderGoalRandomStrollHolo extends PathfinderGoal {
     }
 
     @Nullable
-    protected Vec3D h() {
+    private Vec3D h() {
         return DefaultRandomPos.a(this.entity, 10, 7);
     }
 

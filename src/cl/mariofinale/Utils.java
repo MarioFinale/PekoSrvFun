@@ -18,11 +18,10 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Base64;
 import java.util.List;
 
-public class Utils {
+class Utils {
 
 
     public static boolean getCustomBedOcuppied(Block b) {
@@ -331,6 +330,38 @@ public class Utils {
         }
         return  holoType;
     }
+
+    public static boolean isOre(Block block){
+        return isOre(block.getType());
+    }
+
+    public static boolean isOre(Material material){
+        switch (material){
+            case COAL_ORE:
+            case DEEPSLATE_COAL_ORE:
+            case COPPER_ORE:
+            case DEEPSLATE_COPPER_ORE:
+            case DEEPSLATE_DIAMOND_ORE:
+            case DEEPSLATE_EMERALD_ORE:
+            case DEEPSLATE_GOLD_ORE:
+            case DEEPSLATE_IRON_ORE:
+            case DEEPSLATE_LAPIS_ORE:
+            case DEEPSLATE_REDSTONE_ORE:
+            case DIAMOND_ORE:
+            case EMERALD_ORE:
+            case GOLD_ORE:
+            case IRON_ORE:
+            case LAPIS_ORE:
+            case NETHER_GOLD_ORE:
+            case NETHER_QUARTZ_ORE:
+            case REDSTONE_ORE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+
 
     public static String toBase64(Inventory inventory) throws IllegalStateException {
         try {

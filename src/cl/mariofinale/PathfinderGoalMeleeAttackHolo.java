@@ -10,9 +10,9 @@ import net.minecraft.world.entity.ai.goal.PathfinderGoal.Type;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.level.pathfinder.PathEntity;
 
-public class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
-    private double range;
-    protected final EntityCreature a;
+class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
+    private final double range;
+    private final EntityCreature a;
     private final double b;
     private final boolean c;
     private PathEntity d;
@@ -120,7 +120,7 @@ public class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
         }
     }
 
-    protected void a(EntityLiving var0, double var1) {
+    private void a(EntityLiving var0, double var1) {
         double var3 = this.a(var0);
         if (var1 <= var3 && this.i <= 0) {
             this.h();
@@ -130,7 +130,7 @@ public class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
 
     }
 
-    protected void h() {
+    private void h() {
         this.i = this.a(20);
     }
 
@@ -146,7 +146,7 @@ public class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
         return this.a(20);
     }
 
-    protected double a(EntityLiving var0) {
+    private double a(EntityLiving var0) {
         return this.a.cW() * range * this.a.cW() * range + var0.cW();
     }
 }
