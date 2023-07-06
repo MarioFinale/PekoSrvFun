@@ -40,7 +40,7 @@ class PathfinderGoalTryMineOres extends PathfinderGoal
     public PathfinderGoalTryMineOres(EntityInsentient entity, double speed, int radius)
     {
         this.entity = entity;
-        this.navigation = this.entity.D();
+        this.navigation = this.entity.J();
         this.speed = speed;
         this.radius = radius;
     }

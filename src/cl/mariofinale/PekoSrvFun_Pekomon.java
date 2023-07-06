@@ -7,7 +7,7 @@ import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.EntitySlime;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +16,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 class PekoSrvFun_Pekomon extends EntitySlime {
     public PekoSrvFun_Pekomon(Location loc, String type){
-        super(EntityTypes.aG, ((CraftWorld) loc.getWorld()).getHandle());
+        super(EntityTypes.aL, ((CraftWorld) loc.getWorld()).getHandle());
         this.g(loc.getX(), loc.getY(), loc.getZ());
         persist = true;
 

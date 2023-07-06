@@ -7,7 +7,7 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Bed;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.*;
@@ -86,7 +86,6 @@ class PekoSrvFun_Listener implements Listener{
             PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
             if (holoPet.getStatus().equals("Sitting")){
                 event.setCancelled(true);
-                return;
             }
         }
 
@@ -285,7 +284,7 @@ class PekoSrvFun_Listener implements Listener{
         }
     }
 
-
+    /** @noinspection unused, EmptyMethod */
     private void ClickedOnHorse(PlayerInteractEntityEvent event){
         ///TODO: Horse mechanics.
     }
@@ -360,6 +359,9 @@ class PekoSrvFun_Listener implements Listener{
             pet.getWorld().dropItem(pet.getLocation(), item);
         }
         event.getDrops().clear();
+        Location location = event.getEntity().getLocation();
+        String locationString = "X" + location.getBlockX() + " Y" + location.getBlockY() + " Z" + location.getBlockZ();
+        PekoSrvFun.LogWarn(holoPet.getPetName() + " pet died! at: " + locationString + " Owner: " + holoPet.getOwner());
     }
 
     /** @noinspection unused*/

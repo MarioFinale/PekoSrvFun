@@ -9,7 +9,6 @@ import net.minecraft.world.entity.EntityCreature;
 import net.minecraft.world.entity.ai.goal.PathfinderGoal;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.phys.Vec3D;
-import org.jetbrains.annotations.Nullable;
 
 class PathfinderGoalRandomStrollHolo extends PathfinderGoal {
     public static final int a = 120;
@@ -43,19 +42,18 @@ class PathfinderGoalRandomStrollHolo extends PathfinderGoal {
         Disguise disguise = DisguiseAPI.getDisguise(entity.getBukkitEntity());
         FlagWatcher watcher = disguise.getWatcher();
         if (watcher.isSleeping()) return false;
-        if (this.entity.bJ()) {
+        if (this.entity.bN()) {
             return false;
         } else {
             if (!this.h) {
-                if (this.i && this.entity.dV() >= 100) {
+                if (this.i && this.entity.eh() >= 100) {
                     return false;
                 }
 
-                if (this.entity.dQ().a(b(this.g)) != 0) {
+                if (this.entity.ec().a(b(this.g)) != 0) {
                     return false;
                 }
             }
-
             Vec3D var0 = this.h();
             if (var0 == null) {
                 return false;
@@ -69,28 +67,23 @@ class PathfinderGoalRandomStrollHolo extends PathfinderGoal {
         }
     }
 
-    @Nullable
-    private Vec3D h() {
+    protected Vec3D h() {
         return DefaultRandomPos.a(this.entity, 10, 7);
     }
-
     public boolean b() {
-        return !this.entity.D().l() && !this.entity.bJ();
+        return !this.entity.J().l() && !this.entity.bN();
     }
-
     public void c() {
-        this.entity.D().a(this.c, this.d, this.e, this.f);
+        this.entity.J().a(this.c, this.d, this.e, this.f);
     }
 
     public void d() {
-        this.entity.D().n();
+        this.entity.J().n();
         super.d();
     }
-
     public void i() {
         this.h = true;
     }
-
     public void c(int var0) {
         this.g = var0;
     }

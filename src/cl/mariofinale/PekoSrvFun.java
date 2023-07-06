@@ -10,7 +10,7 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
@@ -342,20 +342,17 @@ public class PekoSrvFun extends JavaPlugin {
                             PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), ownerName, holoPetData, entity.getCustomName(), container);
                             entity.remove();
                         }else {
-                            if (((LivingEntity) entity).getHealth() <= 0){
-                                entity.remove();
-                                return;
-                            }
-                            if (entity.isDead()){
-                                entity.remove();
-                            }
                             if (entity.isInvulnerable()){
                                 entity.setInvulnerable(false);
                             }
 
                             Objects.requireNonNull(((LivingEntity)entity).getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(20); //Let's force set max health to 20. For some reason the Max health attribute changes to absurd levels sometimes
 
-                            if (((LivingEntity)entity).getHealth() < ((LivingEntity)entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() ){
+                            if (((LivingEntity)entity).getHealth() > 20){
+                                ((LivingEntity)entity).setHealth(20); //If, for some reason, health gets over 20
+                            }
+
+                            if (((LivingEntity)entity).getHealth() < 20 && !entity.isDead() ){ //Let's force compare with 20
                                 PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
                                 Inventory inventory = holoPet.inventory;
                                 int carrotIndex = -1;
@@ -378,7 +375,8 @@ public class PekoSrvFun extends JavaPlugin {
                                     entity.getWorld().spawnParticle(Particle.ITEM_CRACK, entity.getLocation(), 25, 0.1,1,0.1,0,carrots);
                                     entity.getWorld().spawnParticle(Particle.ITEM_CRACK, entity.getLocation(), 25, 0.5,1,0.5,0,carrots);
                                     double newHealth = ((LivingEntity) entity).getHealth() + 1;
-                                    double maxHealth = ((LivingEntity) entity).getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
+                                    if (newHealth <= 1) newHealth = 1;
+                                    double maxHealth = 20; //Forcing it to 20 again
                                     ((Zombie) holoPet.getBukkitEntity()).setHealth(Math.min(newHealth, maxHealth));
                                 }
                             }
@@ -431,7 +429,6 @@ public class PekoSrvFun extends JavaPlugin {
         skull.setItemMeta(meta);
         return skull;
     }
-
 
     String getPekomonData(Entity entity) {
         if (!(entity.getType() == EntityType.SLIME)) return "";

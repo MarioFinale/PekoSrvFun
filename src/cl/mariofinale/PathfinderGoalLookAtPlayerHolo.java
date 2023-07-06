@@ -1,6 +1,8 @@
 package cl.mariofinale;
 
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.EnumSet;
 
 import me.libraryaddict.disguise.DisguiseAPI;
@@ -13,29 +15,28 @@ import net.minecraft.world.entity.IEntitySelector;
 import net.minecraft.world.entity.ai.goal.PathfinderGoal;
 import net.minecraft.world.entity.ai.targeting.PathfinderTargetCondition;
 import net.minecraft.world.entity.player.EntityHuman;
-import org.jetbrains.annotations.Nullable;
+
 
 class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
     public static final float a = 0.02F;
-    protected final EntityInsentient entity;
-    @Nullable
+    private final EntityInsentient entity;
     private Entity c;
-    protected final float d;
+    private final float d;
     private int h;
-    protected final float e;
+    private final float e;
     private final boolean i;
-    protected final Class<? extends EntityLiving> targetEntityClass;
-    protected final PathfinderTargetCondition g;
+    private final Class<? extends EntityLiving> targetEntityClass;
+    private final PathfinderTargetCondition g;
 
     public PathfinderGoalLookAtPlayerHolo(EntityInsentient var0, Class<? extends EntityLiving> var1, float var2) {
         this(var0, var1, var2, 0.02F);
     }
 
-    public PathfinderGoalLookAtPlayerHolo(EntityInsentient var0, Class<? extends EntityLiving> var1, float var2, float var3) {
+    private PathfinderGoalLookAtPlayerHolo(EntityInsentient var0, Class<? extends EntityLiving> var1, float var2, float var3) {
         this(var0, var1, var2, var3, false);
     }
 
-    public PathfinderGoalLookAtPlayerHolo(EntityInsentient var0, Class<? extends EntityLiving> var1, float var2, float var3, boolean var4) {
+    private PathfinderGoalLookAtPlayerHolo(EntityInsentient var0, Class<? extends EntityLiving> var1, float var2, float var3, boolean var4) {
         this.entity = var0;
         this.targetEntityClass = var1;
         this.d = var2;
@@ -47,7 +48,6 @@ class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
         } else {
             this.g = PathfinderTargetCondition.b().a(var2);
         }
-
     }
 
     public boolean a() {
@@ -55,25 +55,24 @@ class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
         FlagWatcher watcher = disguise.getWatcher();
         if (watcher.isSleeping()) return false;
 
-        if (this.entity.dQ().i() >= this.e) {
+        if (this.entity.ec().i() >= this.e) {
             return false;
         } else {
-            if (this.entity.G() != null) {
-                this.c = this.entity.G();
+            if (this.entity.j() != null) {
+                this.c = this.entity.j();
             }
 
             if (this.targetEntityClass == EntityHuman.class) {
-                this.c = this.entity.s.a(this.g, this.entity, this.entity.df(), this.entity.dj(), this.entity.dl());
+                this.c = this.entity.dI().a(this.g, this.entity, this.entity.dn(), this.entity.dr(), this.entity.dt());
             } else {
-                this.c = this.entity.s.a(this.entity.s.a(this.targetEntityClass, this.entity.cy().c(this.d, 3.0D, this.d), (var0) -> true), this.g, this.entity, this.entity.df(), this.entity.dj(), this.entity.dl());
+                this.c = this.entity.dI().a(this.entity.dI().a(this.targetEntityClass, this.entity.cE().c((double)this.d, 3.0D, (double)this.d), (var0) -> true), this.g, this.entity, this.entity.dn(), this.entity.dr(), this.entity.dt());
             }
-
             return this.c != null;
         }
     }
 
     public boolean b() {
-        if (!this.c.bo()) {
+        if (!this.c.bs()) {
             return false;
         } else if (this.entity.f(this.c) > (double)(this.d * this.d)) {
             return false;
@@ -83,7 +82,7 @@ class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
     }
 
     public void c() {
-        this.h = this.a(40 + this.entity.dQ().a(40));
+        this.h = this.a(40 + this.entity.ec().a(40));
     }
 
     public void d() {
@@ -91,9 +90,9 @@ class PathfinderGoalLookAtPlayerHolo extends PathfinderGoal {
     }
 
     public void e() {
-        if (this.c.bo()) {
-            double var0 = this.i ? this.entity.dj() : this.c.dj();
-            this.entity.z().a(this.c.df(), var0, this.c.dl());
+        if (this.c.bs()) {
+            double var0 = this.i ? this.entity.dr() : this.c.dr();
+            this.entity.E().a(this.c.dn(), var0, this.c.dt());
             --this.h;
         }
     }

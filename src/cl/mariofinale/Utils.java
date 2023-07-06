@@ -335,7 +335,7 @@ class Utils {
         return isOre(block.getType());
     }
 
-    public static boolean isOre(Material material){
+    private static boolean isOre(Material material){
         switch (material){
             case COAL_ORE:
             case DEEPSLATE_COAL_ORE:

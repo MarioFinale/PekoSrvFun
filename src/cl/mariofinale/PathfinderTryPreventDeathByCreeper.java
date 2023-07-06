@@ -17,7 +17,7 @@ class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
     public PathfinderTryPreventDeathByCreeper(EntityInsentient entity, double speedMultiplier)
     {
         this.entity = entity;
-        this.navigation = this.entity.D();
+        this.navigation = this.entity.J();
         this.speed = speedMultiplier;
     }
 

@@ -33,94 +33,93 @@ class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
         this.a(EnumSet.of(Type.a, Type.b));
     }
 
+
     public boolean a() {
-        long var0 = this.a.s.U();
+        long var0 = this.a.dI().V();
         if (var0 - this.k < 20L) {
             return false;
         } else {
             this.k = var0;
-            EntityLiving var2 = this.a.G();
+            EntityLiving var2 = this.a.j();
             if (var2 == null) {
                 return false;
-            } else if (!var2.bo()) {
+            } else if (!var2.bs()) {
                 return false;
             } else {
-                this.d = this.a.D().a(var2, 0);
+                this.d = this.a.J().a(var2, 0);
                 if (this.d != null) {
                     return true;
                 } else {
-                    return this.a(var2) >= this.a.h(var2.df(), var2.dh(), var2.dl());
+                    return this.a(var2) >= this.a.i(var2.dn(), var2.dp(), var2.dt());
                 }
             }
         }
     }
 
     public boolean b() {
-        EntityLiving var0 = this.a.G();
+        EntityLiving var0 = this.a.j();
         if (var0 == null) {
             return false;
-        } else if (!var0.bo()) {
+        } else if (!var0.bs()) {
             return false;
         } else if (!this.c) {
-            return !this.a.D().l();
-        } else if (!this.a.a(var0.da())) {
+            return !this.a.J().l();
+        } else if (!this.a.a(var0.di())) {
             return false;
         } else {
-            return !(var0 instanceof EntityHuman) || !var0.B_() && !((EntityHuman)var0).f();
+            return !(var0 instanceof EntityHuman) || !var0.G_() && !((EntityHuman)var0).f();
         }
     }
 
     public void c() {
-        this.a.D().a(this.d, this.b);
-        this.a.u(true);
+        this.a.J().a(this.d, this.b);
+        this.a.v(true);
         this.h = 0;
         this.i = 0;
     }
 
     public void d() {
-        EntityLiving var0 = this.a.G();
+        EntityLiving var0 = this.a.j();
         if (!IEntitySelector.e.test(var0)) {
             this.a.h((EntityLiving)null);
         }
 
-        this.a.u(false);
-        this.a.D().n();
+        this.a.v(false);
+        this.a.J().n();
     }
 
-    public boolean E_() {
+    public boolean K_() {
         return true;
     }
 
     public void e() {
-        EntityLiving var0 = this.a.G();
+        EntityLiving var0 = this.a.j();
         if (var0 != null) {
-            this.a.z().a(var0, 30.0F, 30.0F);
-            double var1 = this.a.h(var0.df(), var0.dh(), var0.dl());
+            this.a.E().a(var0, 30.0F, 30.0F);
+            double var1 = this.a.j(var0);
             this.h = Math.max(this.h - 1, 0);
-            if ((this.c || this.a.E().a(var0)) && this.h <= 0 && (this.e == 0.0D && this.f == 0.0D && this.g == 0.0D || var0.h(this.e, this.f, this.g) >= 1.0D || this.a.dQ().i() < 0.05F)) {
-                this.e = var0.df();
-                this.f = var0.dh();
-                this.g = var0.dl();
-                this.h = 4 + this.a.dQ().a(7);
+            if ((this.c || this.a.K().a(var0)) && this.h <= 0 && (this.e == 0.0D && this.f == 0.0D && this.g == 0.0D || var0.i(this.e, this.f, this.g) >= 1.0D || this.a.ec().i() < 0.05F)) {
+                this.e = var0.dn();
+                this.f = var0.dp();
+                this.g = var0.dt();
+                this.h = 4 + this.a.ec().a(7);
                 if (var1 > 1024.0D) {
                     this.h += 10;
                 } else if (var1 > 256.0D) {
                     this.h += 5;
                 }
 
-                if (!this.a.D().a(var0, this.b)) {
+                if (!this.a.J().a(var0, this.b)) {
                     this.h += 15;
                 }
-
                 this.h = this.a(this.h);
             }
-
             this.i = Math.max(this.i - 1, 0);
             this.a(var0, var1);
         }
     }
 
-    private void a(EntityLiving var0, double var1) {
+    protected void a(EntityLiving var0, double var1) {
         double var3 = this.a(var0);
         if (var1 <= var3 && this.i <= 0) {
             this.h();
@@ -130,7 +129,7 @@ class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
 
     }
 
-    private void h() {
+    protected void h() {
         this.i = this.a(20);
     }
 
@@ -146,7 +145,7 @@ class PathfinderGoalMeleeAttackHolo extends PathfinderGoal {
         return this.a(20);
     }
 
-    private double a(EntityLiving var0) {
-        return this.a.cW() * range * this.a.cW() * range + var0.cW();
+    protected double a(EntityLiving var0) {
+        return (double)(this.a.dd() * range * this.a.dd() * range + var0.dd());
     }
 }
