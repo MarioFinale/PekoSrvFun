@@ -66,9 +66,14 @@ class PekoSrvFun_Listener implements Listener{
     /** @noinspection unused*/
     @EventHandler
     public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent event){
-        if (!DisguiseAPI.isDisguised(event.getEntity())) return;
         Entity entity = event.getEntity();
         Entity target = event.getTarget();
+
+        if (isHoloPet(target) && entity.getType().equals(EntityType.IRON_GOLEM)){
+            event.setCancelled(true);
+        }
+
+        if (!DisguiseAPI.isDisguised(event.getEntity())) return;
 
         if (isHoloPet(entity) && isHoloPet(target)){
             event.setCancelled(true);
@@ -77,9 +82,6 @@ class PekoSrvFun_Listener implements Listener{
         if (isHoloPet(entity) && target instanceof Player){
             event.setCancelled(true);
             return;
-        }
-        if (isHoloPet(target) && entity.getType().equals(EntityType.IRON_GOLEM)){
-            event.setCancelled(true);
         }
 
         if (isHoloPet(entity)){

@@ -35,6 +35,17 @@ class PathfinderTryPreventDeathByCreeper extends PathfinderGoal {
                     break;
                 }
             }
+            if (ent.getType().equals(EntityType.PRIMED_TNT)){
+                creeperLocation = ent.getLocation();
+                nearFusedCreeper = true;
+                break;
+            }
+
+            if (ent.getType().equals(EntityType.WARDEN)){
+                creeperLocation = ent.getLocation();
+                nearFusedCreeper = true;
+                break;
+            }
         }
         if (nearFusedCreeper){
             double xvalue;

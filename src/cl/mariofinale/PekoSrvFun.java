@@ -413,7 +413,7 @@ public class PekoSrvFun extends JavaPlugin {
         assert meta != null;
         meta.setOwningPlayer(offlinePlayer2);
         skull.setItemMeta(meta);
-        GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "");
         byte[] encodedData = Base64.getEncoder().encode(String.format("{textures:{SKIN:{url:\"%s\"}}}", "http://textures.minecraft.net/texture/" + textureID).getBytes());
         profile.getProperties().put("textures", new Property("textures", new String(encodedData)));
         Field profileField;

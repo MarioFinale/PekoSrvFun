@@ -17,7 +17,7 @@ import org.bukkit.persistence.PersistentDataType;
 class PekoSrvFun_Pekomon extends EntitySlime {
     public PekoSrvFun_Pekomon(Location loc, String type){
         super(EntityTypes.aL, ((CraftWorld) loc.getWorld()).getHandle());
-        this.g(loc.getX(), loc.getY(), loc.getZ());
+        this.b(loc.getX(), loc.getY(), loc.getZ());
         persist = true;
 
         /* // Disabled for now, Slimes don't have a PathfinderGoalTempt or PathfinderGoalRandomStroll. A custom one needs to be created.

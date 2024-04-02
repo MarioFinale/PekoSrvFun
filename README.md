@@ -14,7 +14,7 @@ Fun Minecraft Plugin for Spigot/PaperMC
  - Each Pekomon has a 93.1% chance of spawning as a male.
  - Each Pekomon type has a different spawning chance:
    - Smiling Pekomon: 33%
-   - Wiking Pekomon: 12%
+   - Winking Pekomon: 12%
    - Happy Pekomon: 40%
    - Derp Pekomon: 5%
    - Cool Pekomon: 10%
