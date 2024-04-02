@@ -31,7 +31,7 @@ class PathfinderGoalWalkNearPlayer extends PathfinderGoal
     {
         this.player = player;
         this.entity = entity;
-        this.navigation = this.entity.J();
+        this.navigation = this.entity.N();
         this.speed = speed;
     }
 

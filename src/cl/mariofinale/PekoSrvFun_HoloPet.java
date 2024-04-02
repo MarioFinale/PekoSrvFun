@@ -27,10 +27,10 @@ import net.minecraft.world.item.Items;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R1.event.CraftEventFactory;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R3.event.CraftEventFactory;
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -56,9 +56,9 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
     private EntityInsentient petNmsEntity;
 
     public PekoSrvFun_HoloPet(Location loc, String playerName, String pType, String customName, PersistentDataContainer dataContainer){
-        super(EntityTypes.bp, ((CraftWorld) loc.getWorld()).getHandle());
+        super(EntityTypes.br, ((CraftWorld) loc.getWorld()).getHandle());
         double holoSpeed = 0.30D;
-        this.b(loc.getX(), loc.getY(), loc.getZ());
+        this.p(loc.getX(), loc.getY(), loc.getZ());
         this.persist = true;
         this.petType = pType;
         this.Owner = playerName;
@@ -238,7 +238,7 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
     }
 
     @Override
-    public SoundEffect s() {
+    public SoundEffect A() {
         Location loc = petEntity.getLocation();
         BlockData data = loc.subtract(0,1,0).getBlock().getBlockData();
         Sound step = data.getSoundGroup().getStepSound();
@@ -272,11 +272,11 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
     public void a(EntityLiving entityliving, float v) {
         net.minecraft.world.item.ItemStack itemStack = this.g(this.b(ProjectileHelper.a(this, Items.nG)));
         EntityArrow entityarrow = this.getArrow(itemStack, v);
-        double d0 = entityliving.dn() - this.dn();
-        double d1 = entityliving.e(0.3333333333333333D) - entityarrow.dp();
-        double d2 = entityliving.dt() - this.dt();
+        double d0 = entityliving.dr() - this.dr();
+        double d1 = entityliving.e(0.3333333333333333D) - entityarrow.dt();
+        double d2 = entityliving.dx() - this.dx();
         double d3 = Math.sqrt(d0 * d0 + d2 * d2);
-        entityarrow.c(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float)(14 - this.dI().ai().a() * 4));
+        entityarrow.c(d0, d1 + d3 * 0.20000000298023224D, d2, 1.6F, (float)(14 - this.dM().ak().a() * 4));
         if (this.inventory.contains(Material.ARROW)){
             int arrowIndex = -1;
             for (int i = 0; i < inventory.getSize(); i++) {
@@ -300,18 +300,18 @@ class PekoSrvFun_HoloPet extends EntityZombie implements InventoryHolder, IRange
                 Utils.setPetInventory(this);
             }
 
-            EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(this, this.eO(), null, entityarrow, EnumHand.a, 0.8F, true);
+            EntityShootBowEvent event = CraftEventFactory.callEntityShootBowEvent(this, this.eT() , CraftItemStack.asNMSCopy(arrows) , entityarrow, EnumHand.a, 0.8F, true);
 
             if (event.isCancelled()) {
                 event.getProjectile().remove();
             } else {
                 if (event.getProjectile() == entityarrow.getBukkitEntity()) {
-                    this.dI().b(entityarrow);
+                    this.dM().b(entityarrow);
                     if (!((Zombie)petEntity).getEquipment().getItemInMainHand().containsEnchantment(Enchantment.ARROW_INFINITE)){
                         ((Arrow)(entityarrow.getBukkitEntity())).setPickupStatus(AbstractArrow.PickupStatus.ALLOWED);
                     }
                 }
-                this.a(SoundEffects.vA, 1.0F, 1.0F / (this.ec().i() * 0.4F + 0.8F));
+                this.a(SoundEffects.wq, 1.0F, 1.0F / (this.eg().i() * 0.4F + 0.8F));
             }
 
         }else{
