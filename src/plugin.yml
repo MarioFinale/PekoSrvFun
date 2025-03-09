@@ -9,3 +9,7 @@ commands:
   peko:
     description: PekoSrvFun commands.
     usage: /Peko <blacklistworld - unblacklistworld - pekomon>
+  npc:
+    description: Allows to create a NPC helper (Formely holopet).
+    usage: /npc <create - list - tp>
+    aliases: [ holopet ]

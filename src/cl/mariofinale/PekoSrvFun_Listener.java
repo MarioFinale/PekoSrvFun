@@ -7,7 +7,7 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Bed;
-import org.bukkit.craftbukkit.v1_20_R3.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_21_R3.entity.CraftEntity;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.*;
@@ -44,252 +44,6 @@ class PekoSrvFun_Listener implements Listener{
         }
     }
 
-    /** @noinspection unused*/
-    @EventHandler
-    public void onEntityTeleportEvent(EntityTeleportEvent event){
-        if(event.isCancelled()) return;
-        if(event.getTo() == null) return;
-        Entity pet = event.getEntity();
-        if (!pet.isValid())return;
-        if (!isHoloPet(event.getEntity())) return;
-        if (DisguiseAPI.isDisguised(pet)) return;
-        String holoPetData = PekoSrvFun.getHoloPetData(pet);
-        String ownerName = pet.getCustomName().split(" ")[0].split("'")[0];
-        PersistentDataContainer container = pet.getPersistentDataContainer();
-        Inventory newInvent = null;
-        PekoSrvFun_HoloPet newpet = new PekoSrvFun_HoloPet(event.getTo(), ownerName, holoPetData, pet.getCustomName(), container);
-        pet.remove();
-        event.setCancelled(true);
-    }
-
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent event){
-        Entity entity = event.getEntity();
-        Entity target = event.getTarget();
-
-        if (isHoloPet(target) && entity.getType().equals(EntityType.IRON_GOLEM)){
-            event.setCancelled(true);
-        }
-
-        if (!DisguiseAPI.isDisguised(event.getEntity())) return;
-
-        if (isHoloPet(entity) && isHoloPet(target)){
-            event.setCancelled(true);
-            return;
-        }
-        if (isHoloPet(entity) && target instanceof Player){
-            event.setCancelled(true);
-            return;
-        }
-
-        if (isHoloPet(entity)){
-            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)entity).getHandle();
-            if (holoPet.getStatus().equals("Sitting")){
-                event.setCancelled(true);
-            }
-        }
-
-    }
-
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onPlayerBedEnterEvent(PlayerBedEnterEvent event){
-        if (event.isCancelled() ){
-            if (event.getBedEnterResult() ==  PlayerBedEnterEvent.BedEnterResult.NOT_SAFE){
-                Collection<Entity> nearbyEntities = event.getBed().getLocation().getWorld().getNearbyEntities(event.getBed().getLocation(), 8,5,8);
-                int petsNear = 0;
-                int monstersNear = 0;
-
-                for (Entity ent: nearbyEntities) {
-                    if (ent.getPersistentDataContainer().has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING)){
-                        petsNear += 1;
-                        continue;
-                    }
-
-                    if (ent.getType() == EntityType.PLAYER){
-                        petsNear += 1;
-                        continue;
-                    }
-                    if (ent instanceof  Monster){
-                        monstersNear += 1;
-                    }
-                }
-
-                if (nearbyEntities.size() <= petsNear){
-                    event.setCancelled(false);
-                    event.getPlayer().sleep(event.getBed().getLocation(), true);
-                    event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("Sleeping through this night."));
-                }
-            }
-        }
-    }
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onEntityCombustEvent(EntityCombustEvent event){
-        if (event instanceof EntityCombustByBlockEvent || event instanceof EntityCombustByEntityEvent) return;
-        if (!DisguiseAPI.isDisguised(event.getEntity())) return;
-        if (!(event.getEntity().getLocation().getBlock().getLightFromSky() > 11)) return;
-        Block block = event.getEntity().getLocation().subtract(0,0,0).getBlock();
-        Block blockUnder = event.getEntity().getLocation().subtract(0,1,0).getBlock();
-        Material blockMaterial = block.getType();
-        Material blockUnderMaterial = blockUnder.getType();
-
-        if (blockMaterial == Material.FIRE) return;
-        if (blockMaterial == Material.SOUL_FIRE) return;
-        if (blockUnderMaterial == Material.LAVA) return;
-        if (blockMaterial == Material.LAVA) return;
-
-        event.setCancelled(true);
-
-    }
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onPlayerJoinEvent(PlayerJoinEvent event){
-        PekoSrvFun.RefreshPekos();
-    }
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onEntityDropItemEvent(EntityDropItemEvent event ){
-        if(event.isCancelled()) return;
-        if (!isHoloPet(event.getEntity())) return;
-        Entity pet = event.getEntity();
-        if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
-            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-            holoPet.inventory.remove(event.getItemDrop().getItemStack());
-            Utils.setPetInventory(holoPet);
-        }
-    }
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onEntityPickupItemEvent(EntityPickupItemEvent event ){
-        if(event.isCancelled()) return;
-        if (!isHoloPet(event.getEntity())) return;
-        Entity pet = event.getEntity();
-        if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
-            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-            holoPet.inventory.addItem(event.getItem().getItemStack());
-            Utils.setPetInventory(holoPet);
-        }
-    }
-
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onEntityResurrectEvent( EntityResurrectEvent event ){
-        if(event.isCancelled()) return;
-        if (!isHoloPet(event.getEntity())) return;
-        Entity pet = event.getEntity();
-        if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
-            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-            Inventory inventory = holoPet.inventory;
-            EntityEquipment equipment = ((Zombie) holoPet.getBukkitEntity()).getEquipment();
-            int totemIndex = -1;
-            for (int i = 0; i < inventory.getSize(); i++) {
-                ItemStack item = inventory.getItem(i);
-                if (item == null) continue;
-                if (item.getType() == Material.TOTEM_OF_UNDYING) {
-                    totemIndex = i;
-                }
-            }
-            if (totemIndex > -1){
-                inventory.setItem(totemIndex, new ItemStack(Material.AIR, 1));
-            }
-            if (inventory.contains(Material.TOTEM_OF_UNDYING)){
-                equipment.setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING, 1));
-            }
-        }
-    }
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onInventoryCloseEvent(InventoryCloseEvent event ){
-        InventoryHolder ent = event.getInventory().getHolder();
-        if (ent == null) return;
-        if( ent.getClass() == PekoSrvFun_HoloPet.class) Utils.setPetInventory(ent);
-    }
-
-    private void RightClickedOnPet(Player player, Entity pet){
-        if(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet){
-            PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-            if (!player.getName().equals(holoPet.getOwner())){
-                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(holoPet.getPetName() + " pet owned by " + holoPet.getOwner()));
-                return;
-            }
-
-            if (player.getEquipment() != null ){
-                if (player.getEquipment().getItemInMainHand().getType() == Material.NAME_TAG){
-                    return;
-                }
-            }
-
-            if (player.isSneaking()) {
-                if (!(holoPet.getPetName().equals("Suisei") || holoPet.getPetName().equals("Rushia"))){
-                    if (player.getEquipment() != null ){
-                        if (player.getEquipment().getItemInMainHand().getType() == Material.AIR){
-                            if (holoPet.getStatus().equals("Sitting")){
-                                holoPet.setStatus("Normal");
-                                DisguiseAPI.getDisguise(holoPet.getBukkitEntity()).getWatcher().setSneaking(false);
-                                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(holoPet.getPetName() + " is no longer waiting."));
-                            }else {
-                                holoPet.setStatus("Sitting");
-                                DisguiseAPI.getDisguise(holoPet.getBukkitEntity()).getWatcher().setSneaking(true);
-                                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(holoPet.getPetName() + " will wait here."));
-                            }
-                            return;
-                        }
-                    }
-                }
-            }
-
-            double currentHealth = ((LivingEntity) holoPet.getBukkitEntity()).getHealth();
-            double maxHealth = 20; //Let's force max health to 20. For some reason the Max health attribute changes to absurd levels sometimes
-            Objects.requireNonNull(((LivingEntity) holoPet.getBukkitEntity()).getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(20); //Force set base health to 20
-            Inventory newInventory = Bukkit.createInventory(holoPet, 9, holoPet.getPetName() + "'s Inventory | HP: " + round(currentHealth) + "/" + round(maxHealth) );
-            newInventory.setContents(holoPet.inventory.getContents());
-            holoPet.inventory = newInventory;
-            player.openInventory(holoPet.inventory);
-        }
-    }
-
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onPlayerInteractEvent(PlayerInteractEvent event){
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            if (event.getClickedBlock() == null) return;
-            if (event.getClickedBlock().getLocation().getWorld() == null) return;
-            if (event.getClickedBlock().getBlockData() instanceof Bed){
-                Collection<Entity> nearbyEntities = event.getClickedBlock().getLocation().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(),10,10,10);
-                for (Entity ent: nearbyEntities) {
-                    if (ent.getPersistentDataContainer().has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING)){
-                        PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet)((CraftEntity) ent).getHandle();
-                        if (pet.getPetName().equals("Suisei")){
-                            event.setCancelled(true);
-                            event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("You may not sleep now; Suisei is near."));
-                            return;
-                        }
-                        if (pet.getPetName().equals("Rushia")){
-                            event.setCancelled(true);
-                            event.getPlayer().spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("You may not sleep now; Rushia is near."));
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /** @noinspection unused, EmptyMethod */
-    private void ClickedOnHorse(PlayerInteractEntityEvent event){
-        ///TODO: Horse mechanics.
-    }
 
     /** @noinspection unused*/
     @EventHandler
@@ -298,8 +52,6 @@ class PekoSrvFun_Listener implements Listener{
         Player player = event.getPlayer();
         PlayerInventory inventory = player.getInventory();
         Entity entity = event.getRightClicked();
-        if (entity.getType() == EntityType.HORSE || entity.getType() == EntityType.SKELETON_HORSE || entity.getType() == EntityType.ZOMBIE_HORSE ) ClickedOnHorse(event);
-        if (isHoloPet(entity)) RightClickedOnPet(player, entity);
         if (!isPekoMon(entity)) return;
 
         if (inventory.getItemInOffHand().isSimilar(new ItemStack(Material.NAME_TAG)) || inventory.getItemInMainHand().isSimilar(new ItemStack(Material.NAME_TAG))){
@@ -346,31 +98,15 @@ class PekoSrvFun_Listener implements Listener{
                     }
                 }
             }
-            entity.getWorld().spawnParticle(Particle.SMOKE_LARGE, entity.getLocation(),1);
+            entity.getWorld().spawnParticle(Particle.SMOKE, entity.getLocation(),1);
         }
     }
 
-    private void HoloPetDeathEvent(EntityDeathEvent event){
-        Entity pet = event.getEntity();
-        if(!(((CraftEntity)pet).getHandle() instanceof PekoSrvFun_HoloPet)) return;
-        PekoSrvFun_HoloPet holoPet = (PekoSrvFun_HoloPet) ((CraftEntity)pet).getHandle();
-        Inventory inventory = holoPet.inventory;
-        for (int i = 0; i < inventory.getSize(); i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item == null) continue;
-            pet.getWorld().dropItem(pet.getLocation(), item);
-        }
-        event.getDrops().clear();
-        Location location = event.getEntity().getLocation();
-        String locationString = "X" + location.getBlockX() + " Y" + location.getBlockY() + " Z" + location.getBlockZ();
-        PekoSrvFun.LogWarn(holoPet.getPetName() + " pet died! at: " + locationString + " Owner: " + holoPet.getOwner());
-    }
 
     /** @noinspection unused*/
     @EventHandler
     public void onEntityDeathEvent(EntityDeathEvent event){
         Entity entity = event.getEntity();
-        if (isHoloPet(event.getEntity())) HoloPetDeathEvent(event);
 
         if (entity.getType() == EntityType.SALMON ||entity.getType() == EntityType.COD ){
             if (DisguiseAPI.isDisguised(entity)){
@@ -386,45 +122,22 @@ class PekoSrvFun_Listener implements Listener{
                 Disguise dis = DisguiseAPI.getDisguise(entity);
                 ItemStack skull = dis.getWatcher().getHelmet().clone();
                 ItemMeta meta = skull.getItemMeta();
-                String lore = meta.getLore().get(0);
-                ItemStack newSkull;
-                switch (lore){
-                    case "Flipped Happy Pekomon M":
-                        newSkull =  PekoSrvFun.PekomonLaughSkull.clone();
-                        break;
-                    case "Flipped Cool Pekomon M":
-                        newSkull =  PekoSrvFun.PekomonCoolSkull.clone();
-                        break;
-                    case "Flipped Winking Pekomon M":
-                        newSkull =  PekoSrvFun.PekomonWinkSkull.clone();
-                        break;
-                    case "Flipped Derp Pekomon M":
-                        newSkull =  PekoSrvFun.PekomonDerpSkull.clone();
-                        break;
-                    case "???? M":
-                        newSkull =  PekoSrvFun.PekomonBlankSkull.clone();
-                        break;
-                    case "Flipped Happy Pekomon F":
-                        newSkull =  PekoSrvFun.PekomonLaughSkullF.clone();
-                        break;
-                    case "Flipped Cool Pekomon F":
-                        newSkull =  PekoSrvFun.PekomonCoolSkullF.clone();
-                        break;
-                    case "Flipped Winking Pekomon F":
-                        newSkull =  PekoSrvFun.PekomonWinkSkullF.clone();
-                        break;
-                    case "Flipped Derp Pekomon F":
-                        newSkull =  PekoSrvFun.PekomonDerpSkullF.clone();
-                        break;
-                    case "???? F":
-                        newSkull =  PekoSrvFun.PekomonBlankSkullF.clone();
-                        break;
-                    case "Flipped Smiling Pekomon F":
-                        newSkull =  PekoSrvFun.PekomonSmileSkullF.clone();
-                        break;
-                    default:
-                        newSkull =  PekoSrvFun.PekomonSmileSkull.clone();
-                }
+                if (meta == null) return;
+                String name = meta.getItemName();
+                ItemStack newSkull = switch (name) {
+                    case "Flipped Happy Pekomon M" -> PekoSrvFun.PekomonLaughSkull.clone();
+                    case "Flipped Cool Pekomon M" -> PekoSrvFun.PekomonCoolSkull.clone();
+                    case "Flipped Winking Pekomon M" -> PekoSrvFun.PekomonWinkSkull.clone();
+                    case "Flipped Derp Pekomon M" -> PekoSrvFun.PekomonDerpSkull.clone();
+                    case "???? M" -> PekoSrvFun.PekomonBlankSkull.clone();
+                    case "Flipped Happy Pekomon F" -> PekoSrvFun.PekomonLaughSkullF.clone();
+                    case "Flipped Cool Pekomon F" -> PekoSrvFun.PekomonCoolSkullF.clone();
+                    case "Flipped Winking Pekomon F" -> PekoSrvFun.PekomonWinkSkullF.clone();
+                    case "Flipped Derp Pekomon F" -> PekoSrvFun.PekomonDerpSkullF.clone();
+                    case "???? F" -> PekoSrvFun.PekomonBlankSkullF.clone();
+                    case "Flipped Smiling Pekomon F" -> PekoSrvFun.PekomonSmileSkullF.clone();
+                    default -> PekoSrvFun.PekomonSmileSkull.clone();
+                };
                 newSkull.setAmount(1);
                 event.getDrops().clear();
                 event.getDrops().add(new ItemStack(Material.SLIME_BALL, 1));
@@ -441,36 +154,6 @@ class PekoSrvFun_Listener implements Listener{
                 entity.getLocation().getWorld().playSound(entity.getLocation(), Sound.ENTITY_RABBIT_DEATH, SoundCategory.NEUTRAL,2,1 );
             }
         }
-    }
-
-
-    /** @noinspection unused*/
-    @EventHandler
-    public void onChunkUnloadEvent(ChunkUnloadEvent event ){
-         Entity[] entities = event.getChunk().getEntities();
-         for (Entity entity: entities){
-             if (isHoloPet(entity)){
-                 Entity entity1 = entity;
-                 if(!(((CraftEntity)entity).getHandle() instanceof PekoSrvFun_HoloPet)){
-                     PersistentDataContainer container = entity.getPersistentDataContainer();
-                     String holoPetTypeKey = container.get(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING);
-                     String holoPetOwnerKey = container.get(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING);
-                     PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(entity.getLocation(), holoPetOwnerKey, holoPetTypeKey, entity.getCustomName(), entity.getPersistentDataContainer());
-                     entity.remove();
-                     entity1 = pet.getBukkitEntity();
-                 }
-                 Location location = entity1.getLocation();
-                 PekoSrvFun_HoloPet pet = (PekoSrvFun_HoloPet) ((CraftEntity)entity1).getHandle();
-                 String locationString = "X" + location.getBlockX() + " Y" + location.getBlockY() + " Z" + location.getBlockZ();
-                 PekoSrvFun.LogWarn(pet.getPetName() + " pet stored in unloaded chunk!: " + locationString + " Owner: " + pet.getOwner());
-                 String ownerName = pet.getOwner();
-                 Player player = Bukkit.getPlayer(ownerName);
-                 if (player == null) continue;
-                 if (player.isOnline()){
-                     PekoSrvFun_Commands.SendMessageToPlayer(player,"Your " + pet.getPetName() + " pet is in a now unloaded chunk at: " + locationString);
-                 }
-             }
-         }
     }
 
 
@@ -536,26 +219,17 @@ class PekoSrvFun_Listener implements Listener{
 
 
     private boolean isPekoMon(Entity entity){
+        if (entity == null) return false;
         if (!(entity.getType() == EntityType.SLIME)) return false;
         if (!(DisguiseAPI.isDisguised(entity))) return false;
         FlagWatcher watcher = DisguiseAPI.getDisguise(entity).getWatcher();
         if (!watcher.getDisguise().isUpsideDown()) return false;
         PersistentDataContainer container = entity.getPersistentDataContainer();
         if (!(container.has(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING))) return false;
-        String pekomonTypeKey;
-        pekomonTypeKey = container.get(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING);
+        String pekomonTypeKey = container.get(PekoSrvFun.pekomonTypeKey, PersistentDataType.STRING);
+        if (pekomonTypeKey == null) return false;
         return !pekomonTypeKey.isBlank();
     }
 
-    private boolean isHoloPet(Entity entity){
-        if (entity == null) return  false;
-        if (!entity.isValid()) return  false;
-        PersistentDataContainer container = entity.getPersistentDataContainer();
-        if (!(container.has(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING))) return false;
-        if (!(container.has(PekoSrvFun.holoPetOwnerKey, PersistentDataType.STRING))) return false;
-        String holoPetTypeKey;
-        holoPetTypeKey = container.get(PekoSrvFun.holoPetTypeKey, PersistentDataType.STRING);
-        return !holoPetTypeKey.isBlank();
-    }
 
 }

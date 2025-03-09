@@ -6,8 +6,9 @@ import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.EntitySlime;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_21_R3.CraftWorld;
 import org.bukkit.entity.*;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +17,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 class PekoSrvFun_Pekomon extends EntitySlime {
     public PekoSrvFun_Pekomon(Location loc, String type){
-        super(EntityTypes.aM, ((CraftWorld) loc.getWorld()).getHandle());
+        super(EntityTypes.bg, ((CraftWorld) loc.getWorld()).getHandle());
         this.g(loc.getX(), loc.getY(), loc.getZ());
         persist = true;
 
@@ -141,6 +142,10 @@ class PekoSrvFun_Pekomon extends EntitySlime {
         watcher.setUpsideDown(true);
         watcher.setArmor(new ItemStack[]{null, null, null, skull});
         DisguiseAPI.disguiseToAll(entity, disguise);
+
+        Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(PekoSrvFun.plugin , () -> {
+            this.getBukkitEntity().teleport(loc);
+        }, 5L);
     }
 }
 

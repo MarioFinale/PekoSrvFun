@@ -1,13 +1,10 @@
-package cl.mariofinale;
+package cl.mariofinale.NPC;
 
-
-import me.libraryaddict.disguise.DisguiseAPI;
-import me.libraryaddict.disguise.disguisetypes.Disguise;
-import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
 import net.minecraft.world.entity.EntityInsentient;
 import net.minecraft.world.entity.ai.goal.PathfinderGoal;
 import net.minecraft.world.entity.ai.navigation.NavigationAbstract;
 import net.minecraft.world.level.pathfinder.PathEntity;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -18,53 +15,63 @@ import org.bukkit.entity.Player;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-class PathfinderGoalWalkNearPlayer extends PathfinderGoal
+class PathfinderGoalNPCWalkNearPlayer extends PathfinderGoal
 {
     private final double speed;
-    private final EntityInsentient entity;
     private final String player;
     private final NavigationAbstract navigation;
     private PathEntity destination;
     private Block lastSleepingBlock;
+    private NPCHelper thisNPC;
 
-    public PathfinderGoalWalkNearPlayer(EntityInsentient entity, double speed, String player)
+    public PathfinderGoalNPCWalkNearPlayer(EntityInsentient entity, double speed, String player)
     {
         this.player = player;
-        this.entity = entity;
-        this.navigation = this.entity.N();
+        this.thisNPC = (NPCHelper) entity;
+        this.navigation = thisNPC.getNPCNavigation();
         this.speed = speed;
     }
 
-    public boolean a()
-    {
-        if (((PekoSrvFun_HoloPet) this.entity).getStatus().equals("Sitting")) return false;
+    public boolean V_() {
+        return false;
+    } //requiresUpdateEveryTick
+
+    public void a() {
+        this.navigation.a(this.destination, speed);
+    } //tick
+
+    public void e() {
+
+    } //stop
+
+    public boolean b() { //canUse
+        if (thisNPC.isSitting()) return false;
+        if (thisNPC.isFreeToWander()) return false;
         Player tPlayer = Bukkit.getPlayer(player);
         if (tPlayer == null) return false;
         if (!tPlayer.isOnline()) return false;
-        Disguise disguise = DisguiseAPI.getDisguise(entity.getBukkitEntity());
-        FlagWatcher watcher = disguise.getWatcher();
-        if (tPlayer.isSleeping() && watcher.isSleeping()) return false;
-        if (!watcher.isSleeping() && tPlayer.isSleeping()){
-            Block standingBlock = this.entity.getBukkitEntity().getLocation().subtract(0,0.5,0).getBlock();
+        if (tPlayer.isSleeping() && thisNPC.isSleeping()) return false;
+        if (!thisNPC.isSleeping() && tPlayer.isSleeping()){
+            Block standingBlock = thisNPC.getLocation().subtract(0,0.5,0).getBlock();
             String blockTypeName = standingBlock.getType().toString();
             BlockData data = standingBlock.getBlockData();
             if (blockTypeName.matches(".+?_BED")){
                 Location standingBlockLocation = standingBlock.getLocation();
                 if (data instanceof Bed){
                     Bed bed = (Bed) data;
-                    Bed.Part bedpart = bed.getPart();
-                    if (!bed.isOccupied() && !Utils.getCustomBedOcuppied(standingBlock)){
-                        if (bedpart == Bed.Part.HEAD){
+                    Bed.Part bedPart = bed.getPart();
+                    if (!bed.isOccupied() && !NPCUtils.getCustomBedOcuppied(standingBlock)){
+                        if (bedPart == Bed.Part.HEAD){
                             Location loc1 = standingBlock.getLocation();
                             Location loc2 = standingBlock.getLocation();
                             Location newLocation = loc1.add(0.5, 0.6,0.5);
-                            this.entity.getBukkitEntity().teleport(newLocation);
-                            String entityID = entity.getBukkitEntity().getUniqueId().toString();
+                            thisNPC.teleport(newLocation);
+                            String entityID = thisNPC.getUniqueId().toString();
                             String command = "data merge entity " + entityID +" {SleepingX:" + loc2.getBlockX() + ",SleepingY:" + (loc2.getBlockY()) + ",SleepingZ:"  + loc2.getBlockZ() + "}"; //Maybe there's a better way???
-                            Utils.setCustomBedOcuppied(standingBlock, true);
+                            NPCUtils.setCustomBedOcuppied(standingBlock, true);
                             lastSleepingBlock = standingBlock;
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-                            watcher.setSleeping(true);
+                            thisNPC.setSleeping();
                             return false;
 
                         }else {
@@ -76,25 +83,25 @@ class PathfinderGoalWalkNearPlayer extends PathfinderGoal
 
                             if (option1.getBlockData() instanceof Bed){
                                 if (((Bed) option1.getBlockData()).getPart() == Bed.Part.HEAD){
-                                    this.entity.getBukkitEntity().teleport(option1.getLocation().clone().add(0.5,0.6,0.5));
+                                    thisNPC.teleport(option1.getLocation().clone().add(0.5,0.6,0.5));
                                     return false;
                                 }
                             }
                             if (option2.getBlockData() instanceof Bed){
                                 if (((Bed) option2.getBlockData()).getPart() == Bed.Part.HEAD){
-                                    this.entity.getBukkitEntity().teleport(option2.getLocation().clone().add(0.5,0.6,0.5));
+                                    thisNPC.teleport(option2.getLocation().clone().add(0.5,0.6,0.5));
                                     return false;
                                 }
                             }
                             if (option3.getBlockData() instanceof Bed){
                                 if (((Bed) option3.getBlockData()).getPart() == Bed.Part.HEAD){
-                                    this.entity.getBukkitEntity().teleport(option3.getLocation().clone().add(0.5,0.6,0.5));
+                                    thisNPC.teleport(option3.getLocation().clone().add(0.5,0.6,0.5));
                                     return false;
                                 }
                             }
                             if (option4.getBlockData() instanceof Bed){
                                 if (((Bed) option4.getBlockData()).getPart() == Bed.Part.HEAD){
-                                    this.entity.getBukkitEntity().teleport(option4.getLocation().clone().add(0.5,0.6,0.5));
+                                    thisNPC.teleport(option4.getLocation().clone().add(0.5,0.6,0.5));
                                     return false;
                                 }
                             }
@@ -105,7 +112,7 @@ class PathfinderGoalWalkNearPlayer extends PathfinderGoal
 
             }
             int radius = 10;
-            Location location = entity.getBukkitEntity().getLocation();
+            Location location = thisNPC.getLocation();
 
             for(int x = location.getBlockX() - radius; x <= location.getBlockX() + radius; x++) {
                 for(int y = location.getBlockY() - radius; y <= location.getBlockY() + radius; y++) {
@@ -116,7 +123,7 @@ class PathfinderGoalWalkNearPlayer extends PathfinderGoal
                             Bed bed = (Bed) blockData;
                             Bed.Part bedPart = bed.getPart();
                             if (bedPart == Bed.Part.HEAD){
-                                if (!(bed.isOccupied()||Utils.getCustomBedOcuppied(block))){
+                                if (!(bed.isOccupied()||NPCUtils.getCustomBedOcuppied(block))){
                                     destination = this.navigation.a(block.getX(), block.getY() + 0.6, block.getZ(), 1);
                                     return true;
                                 }
@@ -127,24 +134,24 @@ class PathfinderGoalWalkNearPlayer extends PathfinderGoal
             }
 
         }else {
-            if (watcher.isSleeping()){
-                watcher.setSleeping(false);
+            if (thisNPC.isSleeping()){
+                thisNPC.setNotSleeping();
                 if (lastSleepingBlock != null){
-                    Utils.setCustomBedOcuppied(lastSleepingBlock, false);
+                    NPCUtils.setCustomBedOcuppied(lastSleepingBlock, false);
                 }
 
             }
 
         }
 
-        if (!this.entity.getBukkitEntity().getWorld().getName().equals(tPlayer.getLocation().getWorld().getName())) return false;
+        if (!thisNPC.getWorld().getName().equals(tPlayer.getLocation().getWorld().getName())) return false;
 
-        if (this.entity.getBukkitEntity().getLocation().distance(tPlayer.getLocation()) > 30){
-            this.entity.getBukkitEntity().teleport(tPlayer.getLocation());
+        if (thisNPC.getLocation().distance(tPlayer.getLocation()) > 30){
+            thisNPC.teleport(tPlayer.getLocation());
             return false;
         }
 
-        if (this.entity.getBukkitEntity().getLocation().distance(tPlayer.getLocation()) > 15){
+        if (thisNPC.getLocation().distance(tPlayer.getLocation()) > 15){
             int randomX = ThreadLocalRandom.current().nextInt(tPlayer.getLocation().getBlockX() - 3, tPlayer.getLocation().getBlockX() + 3);
             int randomY = tPlayer.getLocation().getBlockY(); //same height
             int randomZ = ThreadLocalRandom.current().nextInt(tPlayer.getLocation().getBlockZ() - 3, tPlayer.getLocation().getBlockZ() + 3);
@@ -155,16 +162,6 @@ class PathfinderGoalWalkNearPlayer extends PathfinderGoal
         return false;
     }
 
-    public boolean b(){
-        return false;
-    }
-
-    public void c() {
-        this.navigation.a(this.destination, speed);
-    }
-
-    public void d() {
-    }
 
 
 }

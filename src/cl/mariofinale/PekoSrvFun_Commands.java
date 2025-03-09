@@ -1,4 +1,6 @@
 package cl.mariofinale;
+import cl.mariofinale.NPC.NPCHelper;
+import cl.mariofinale.NPC.NPCUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -34,8 +36,9 @@ public class PekoSrvFun_Commands implements CommandExecutor {
                 SpawnPekomon(player,args[1]);
                 return true;
             case "HOLOPET":
-                if(!SpawnHoloPet(player, args[1])){
-                    SendMessageToPlayer(player,"Insufficient resources! You Need 1 Pekomon Head, and 1 Deepslate Emerald Block or 10 Netherite cubes.");
+                if (!NPCUtils.SpawnNPCHelper(player, args[1])) {
+                    Peko_Utils.sendMessageToPlayer(player, "Insufficient Resources!");
+                    Peko_Utils.sendMessageToPlayer(player, "You need a Pekomon head and 10 Netherithe blocks or one Deepslate emerald ore.");
                 }
                 return true;
             default:
@@ -43,58 +46,6 @@ public class PekoSrvFun_Commands implements CommandExecutor {
         }
     }
 
-    static boolean SpawnHoloPet(Player player, String type){
-        Inventory inventory = player.getInventory();
-        int SkullIndex = -1;
-        int EmeraldIndex = -1;
-        int NetheriteIndex = -1;
-        for (int i = 0; i < inventory.getSize(); i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item == null) continue;
-            if (item.getType() == Material.PLAYER_HEAD) {
-                SkullIndex = i;
-            }
-            if (item.getType() == Material.DEEPSLATE_EMERALD_ORE) {
-                EmeraldIndex = i;
-            }
-            if (item.getType() == Material.NETHERITE_BLOCK) {
-                NetheriteIndex = i;
-            }
-        }
-        if (SkullIndex <= -1) return false;
-        if (EmeraldIndex <= -1 && NetheriteIndex <= -1) return false;
-        if (NetheriteIndex > -1){
-            ItemStack netherite = inventory.getItem(NetheriteIndex);
-            if (netherite.getAmount() > 10){
-                netherite.setAmount(netherite.getAmount()-10);
-            }else if(netherite.getAmount() == 10){
-                inventory.setItem(NetheriteIndex, new ItemStack(Material.AIR, 1));
-            }else{
-                if (EmeraldIndex <= -1) return false;
-            }
-        }
-        ItemStack skull = inventory.getItem(SkullIndex);
-        if (skull.getAmount() > 1){
-            skull.setAmount(skull.getAmount() - 1);
-        }else if(skull.getAmount() == 1){
-            inventory.setItem(SkullIndex, new ItemStack(Material.AIR, 1));
-        }else{
-            return false;
-        }
-        if (EmeraldIndex > -1){
-            ItemStack emeralds = inventory.getItem(EmeraldIndex);
-            if (emeralds.getAmount() > 1){
-                emeralds.setAmount(emeralds.getAmount()-1);
-            }else{
-                inventory.setItem(EmeraldIndex, new ItemStack(Material.AIR, 1));
-            }
-        }
-
-        PekoSrvFun_HoloPet pet = new PekoSrvFun_HoloPet(player.getLocation(), player.getName(), type, "", null);
-        SendMessageToPlayer(player,"Your " + pet.getPetName() + " HoloPet has been Invoked!" );
-        player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1,1);
-        return true;
-    }
 
     /** @noinspection SameReturnValue*/
     private static boolean AddWorldToList(Player player, String worldName) {
@@ -105,18 +56,18 @@ public class PekoSrvFun_Commands implements CommandExecutor {
         if (worldList.contains(worldName)){
             if (!PekoSrvFun.WorldsList.contains(worldName)){
                 PekoSrvFun.WorldsList.add(worldName);
-                SendMessageToPlayer(player, "The World '" + worldName + "' was added to the list.");
+                sendMessageToPlayer(player, "The World '" + worldName + "' was added to the list.");
             }else{
-                SendMessageToPlayer(player, "The World '" + worldName + "' already is on the list.");
+                sendMessageToPlayer(player, "The World '" + worldName + "' already is on the list.");
             }
         }else {
-            SendMessageToPlayer(player, "The World '" + worldName + "' does not exist.");
+            sendMessageToPlayer(player, "The World '" + worldName + "' does not exist.");
             StringBuilder availableWorlds = new StringBuilder();
             for (String wN : worldList){
                 availableWorlds.append(wN).append(" - ");
             }
             availableWorlds = new StringBuilder(availableWorlds.substring(0, availableWorlds.length() - 3).trim());
-            SendMessageToPlayer(player, "Available Worlds: " + availableWorlds + "");
+            sendMessageToPlayer(player, "Available Worlds: " + availableWorlds + "");
         }
         return true;
     }
@@ -125,19 +76,25 @@ public class PekoSrvFun_Commands implements CommandExecutor {
     private static boolean RemoveWorldFromList(Player player, String worldName) {
         if (PekoSrvFun.WorldsList.contains(worldName)){
             PekoSrvFun.WorldsList.remove(worldName);
-            SendMessageToPlayer(player, "The World '" + worldName + "' was removed from the list.");
+            sendMessageToPlayer(player, "The World '" + worldName + "' was removed from the list.");
         }else {
-            SendMessageToPlayer(player, "The World '" + worldName + "' is not on the list.");
+            sendMessageToPlayer(player, "The World '" + worldName + "' is not on the list.");
         }
         return true;
     }
 
 
-    public static void SendMessageToPlayer(Player player, String message) {
+    public static void sendMessageToPlayer(Player player, String message) {
         if (!player.isValid()) return;
         if (!player.isOnline()) return;
         String resultingMessage = PekoSrvFun_PluginVars.PluginPrefix + " " + message;
         player.sendMessage(resultingMessage);
+    }
+
+    public static void sendMessagesToPlayer(Player player, String[] messages){
+        for (String message : messages){
+            sendMessageToPlayer(player, message);
+        }
     }
 
     private static void SpawnPekomon(Player player, String type){
